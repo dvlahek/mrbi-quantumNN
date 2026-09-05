@@ -1,0 +1,2 @@
+dataset,pca_qnn,zero_qnn,best_mrbi_qnn,delta_zero,delta_pca,n_seeds
+spambase,0.8750,0.8333,0.8806,0.0472,0.0056,3
