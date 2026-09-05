@@ -1,0 +1,9 @@
+quantity,value
+Number of datasets,9
+Positive improvements,8
+Neutral cases,1
+Negative cases,0
+Mean delta_zero,0.0231
+Median delta_zero,0.0208
+Wilcoxon statistic,36.0
+One-sided Wilcoxon p-value,0.0039
