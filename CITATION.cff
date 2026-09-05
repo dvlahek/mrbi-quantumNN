@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: "MRBI-Stabilized Implicit Equilibrium Features for Simulated Quantum Neural Network Readouts"
+message: "If you use this code, please cite the associated manuscript and the related Numerical Algorithms article when using the multiscale residual-detector idea."
+type: software
+authors:
+  - family-names: Vlahek
+    given-names: Dino
+  - family-names: Oreski
+    given-names: Dijana
+  - family-names: Schatten
+    given-names: Markus
+year: 2026
+license: MIT
+references:
+  - type: article
+    authors:
+      - family-names: Vlahek
+        given-names: Dino
+    title: "A hybrid gaussian-wavelet multiscale algorithm for zero localization in oscillatory functions"
+    journal: "Numerical Algorithms"
+    year: 2026
+    doi: "10.1007/s11075-026-02484-8"
