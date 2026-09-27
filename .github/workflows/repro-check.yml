@@ -1,0 +1,36 @@
+name: Reproducibility checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run MRBI smoke test
+        run: python scripts/run_mrbi_smoke_test.py
+
+      - name: Check manuscript summary consistency
+        run: python scripts/check_consistency.py
+
+      - name: Regenerate table snippets
+        run: python scripts/reproduce_tables.py
+
+      - name: Regenerate diagnostic figures
+        run: |
+          python scripts/make_rho_sensitivity_figure.py
+          python scripts/make_qubit_width_heatmap.py
