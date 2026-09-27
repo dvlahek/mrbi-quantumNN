@@ -25,8 +25,11 @@ def main():
     assert_close("pca4 delta", pca4_mean["delta_pca4"], 0.0241)
 
     spam = pd.read_csv(DATA / "spambase_external.csv").iloc[0]
-    assert_close("Spambase delta_zero", spam["delta_zero"], 0.0472)
-    assert_close("Spambase delta_pca", spam["delta_pca"], 0.0056)
+    assert_close("Spambase PCA-QNN", spam["pca_qnn"], 0.8667)
+    assert_close("Spambase Zero-QNN", spam["zero_qnn"], 0.8511)
+    assert_close("Spambase Best MRBI-QNN", spam["best_mrbi_qnn"], 0.8617)
+    assert_close("Spambase delta_zero", spam["delta_zero"], 0.0106)
+    assert_close("Spambase delta_pca", spam["delta_pca"], -0.0050)
 
     classical = pd.read_csv(DATA / "classical_readout_check.csv")
     expected = {"LogReg", "SVM-RBF", "MLP", "RF", "GBM"}
