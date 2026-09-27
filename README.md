@@ -4,7 +4,7 @@ Minimal reproducibility package for the manuscript:
 
 **MRBI-Stabilized Implicit Equilibrium Features for Simulated Quantum Neural Network Readouts**
 
-The package contains a compact, review-friendly code path for checking the numerical values and core implementation used in the manuscript.
+The package contains a compact reproducibility path for checking the manuscript-level numerical summaries and the core MRBI implementation.
 
 ## Contents
 
@@ -60,7 +60,7 @@ The full simulated-QNN sweeps are computationally slower and depend on the exact
 - `pca4_control.csv`: fair input-dimensionality control.
 - `main_statistical_summary.csv`: dataset-level Wilcoxon summary.
 - `classical_readout_check.csv`: logistic regression, SVM-RBF, MLP, RF, and GBM readout check.
-- `spambase_external.csv`: external numeric Spambase check.
+- `spambase_external.csv`: external numeric Spambase check for the current NPL submission version.
 - `rho_sensitivity_delta_summary_for_plot.csv`: spectral-radius sensitivity figure data.
 - `qubit_width_sensitivity_summary_for_plot.csv`: qubit-width sensitivity heatmap data.
 
@@ -74,4 +74,4 @@ That article studies Gaussian-wavelet multiscale zero localization for oscillato
 
 ## Interpretation note
 
-MRBI changes the initialization of the implicit equilibrium solve. It does not change the downstream QNN architecture. The best-profile MRBI columns in the manuscript are upper-envelope diagnostics over predefined MRBI profiles, not separately validated deployment models.
+MRBI changes the initialization of the implicit equilibrium solve. It does not change the downstream QNN architecture. The best-profile MRBI columns in the manuscript are upper-envelope diagnostics over predefined MRBI profiles, not separately validated deployment models. A deployment-oriented version should use a fixed standard profile or select a profile on a validation split.
