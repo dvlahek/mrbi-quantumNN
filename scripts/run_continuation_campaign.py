@@ -142,7 +142,7 @@ def main():
             break
         raw, summ, cfg, log = job_paths(out, ds, seed)
         raw.parent.mkdir(parents=True, exist_ok=True)
-        cmd = [sys.executable, str(RUNNER), "--mode", "hard_quick",
+        cmd = [sys.executable, "-u", str(RUNNER), "--mode", "hard_quick",
                "--datasets", ds, "--seeds", str(seed), "--qubits", "4",
                "--latent-dims", "16", "--spectral-radii", "2.0",
                "--input-scales", "1.1", "--max-samples-per-class", "80",
@@ -152,8 +152,25 @@ def main():
         print(f"Starting {ds} seed={seed}; log: {log}", flush=True)
         t0 = time.perf_counter()
         with log.open("w", encoding="utf-8") as output:
-            proc = subprocess.run(cmd, cwd=ROOT, stdout=output,
-                                  stderr=subprocess.STDOUT, check=False)
+            proc = subprocess.Popen(cmd, cwd=ROOT, stdout=output,
+                                    stderr=subprocess.STDOUT)
+            try:
+                while proc.poll() is None:
+                    try:
+                        proc.wait(timeout=120)
+                    except subprocess.TimeoutExpired:
+                        elapsed = (time.perf_counter() - t0) / 60.0
+                        print(f"  Running {ds} seed={seed}: {elapsed:.1f} min elapsed; "
+                              f"details: {log}", flush=True)
+            except KeyboardInterrupt:
+                print(f"Interrupted {ds} seed={seed}; stopping its worker.", flush=True)
+                proc.terminate()
+                try:
+                    proc.wait(timeout=30)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait()
+                raise
         if proc.returncode != 0 or not valid_job(raw, ds, seed):
             print(f"Job failed or did not produce 97 valid rows: {log}")
             raise SystemExit(proc.returncode or 1)

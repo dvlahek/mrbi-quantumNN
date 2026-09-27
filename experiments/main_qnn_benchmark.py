@@ -1017,6 +1017,7 @@ def run_job(dataset: str, cfg: ExperimentConfig, mrbi_profiles: List[MRBIProfile
 
     rows: List[Dict[str, Any]] = []
 
+    print(f"[{dataset} seed={cfg.seed}] PCA readouts", flush=True)
     rows.extend(evaluate_readouts(dataset, "pca", Xtr_p, Xte_p, ytr, yte, cfg, readouts_pca))
 
     layer = make_random_implicit_layer(
@@ -1027,6 +1028,7 @@ def run_job(dataset: str, cfg: ExperimentConfig, mrbi_profiles: List[MRBIProfile
     )
 
     # Zero control.
+    print(f"[{dataset} seed={cfg.seed}] Zero-init implicit features", flush=True)
     t0 = time.perf_counter()
     Ztr_zero, st_tr_zero = solve_zero_features(Xtr_p, layer, cfg)
     Zte_zero, st_te_zero = solve_zero_features(Xte_p, layer, cfg)
@@ -1039,6 +1041,7 @@ def run_job(dataset: str, cfg: ExperimentConfig, mrbi_profiles: List[MRBIProfile
     # MRBI profiles and hybrid settings.
     for mp in mrbi_profiles:
         cfg_mp = apply_mrbi_profile(cfg, mp)
+        print(f"[{dataset} seed={cfg.seed}] Forced MRBI profile: {mp.name}", flush=True)
 
         # Forced MRBI for candidate usefulness.
         t0 = time.perf_counter()
@@ -1065,6 +1068,7 @@ def run_job(dataset: str, cfg: ExperimentConfig, mrbi_profiles: List[MRBIProfile
         # Hybrid variants.
         for hp in hybrid_profiles:
             cfg_h = apply_hybrid_profile(cfg_mp, hp)
+            print(f"[{dataset} seed={cfg.seed}] Hybrid: {hp.name} / {mp.name}", flush=True)
 
             t0 = time.perf_counter()
             Ztr_h, st_tr_h = solve_hybrid_features(
