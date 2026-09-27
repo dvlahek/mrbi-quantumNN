@@ -53,6 +53,14 @@ The two historical main raw files have all five seeds for six tasks and only see
 
 The historical main table selects the best MRBI method by its five-seed **dataset-level mean**. The separate Spambase external check selects the best of two MRBI profiles within each seed, so its best-profile column is a descriptive upper envelope.
 
+## Lower-cost, fixed-method experiment
+
+A separate [core design](docs/core_design.md) evaluates eight predefined QNN representations (25 total readout-method rows) for every dataset and seed. It uses the same corrected continuation solver and QNN training settings as the full campaign. The experiment is isolated on branch `experiment/continuation-core-20260927`, so an already-running full campaign remains untouched.
+
+From a separate checkout of that branch, run `python scripts/run_core_campaign.py --max-new-jobs 1` and then resume with `python scripts/run_core_campaign.py`. Once every job has completed, run `python scripts/summarize_core_campaign.py --require-complete`. The new result package has its own output directory and explicit `campaign_design` tag.
+
+The core campaign gives up the 97-method search and cannot support the old nine-task upper-envelope claim without updating the paper's result tables and interpretation.
+
 ## Reproduce the corrected multiscale method
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.
