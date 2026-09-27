@@ -43,7 +43,7 @@ jobs:
         run: python scripts/test_core_plan.py
 
       - name: Verify resumable core-campaign arguments
-        run: python scripts/run_core_campaign.py --dry-run --datasets breast_cancer --seeds 0
+        run: python scripts/run_core_campaign.py --dry-run --datasets breast_cancer --seeds 0 --max-wall-hours 8 --summarize
 
       - name: Check manuscript summary consistency
         run: python scripts/check_consistency.py

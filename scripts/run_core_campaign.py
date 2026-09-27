@@ -38,6 +38,12 @@ def args_parser():
                         default=ROOT / "outputs" / "core_continuation_v1")
     parser.add_argument("--max-new-jobs", type=int, default=None,
                         help="Stop after this many newly completed jobs, then resume later.")
+    parser.add_argument("--max-wall-hours", type=float, default=None,
+                        help="Stop starting new jobs near this time budget; finish the current job safely.")
+    parser.add_argument("--summarize", action="store_true",
+                        help="After collecting jobs, summarize datasets with all five seeds.")
+    parser.add_argument("--collect-only", action="store_true",
+                        help="Rebuild main_raw.csv and optional summaries without launching new jobs.")
     parser.add_argument("--verify-only", action="store_true",
                         help="Check completed files without running the QNN.")
     parser.add_argument("--dry-run", action="store_true",
@@ -106,6 +112,8 @@ def main():
         raise SystemExit("Seeds must be nonnegative integers.")
     if opts.max_new_jobs is not None and opts.max_new_jobs < 1:
         raise SystemExit("--max-new-jobs must be positive.")
+    if opts.max_wall_hours is not None and opts.max_wall_hours <= 0:
+        raise SystemExit("--max-wall-hours must be positive.")
     out = opts.out_dir.resolve()
     jobs = [(ds, seed) for ds in opts.datasets for seed in opts.seeds]
     completed, pending = [], []
@@ -145,7 +153,20 @@ def main():
             raise SystemExit("Could not record pip freeze; see environment.json.")
         (out / "environment.freeze.txt").write_text(freeze.stdout, encoding="utf-8")
     done = 0
+    start = time.monotonic()
     for ds, seed in pending:
+        if opts.collect_only:
+            print("Collect-only mode: no new jobs started.", flush=True)
+            break
+        # Reserve 15 minutes to avoid starting a typical job near the deadline.
+        # An unusually slow job is still allowed to finish, preserving its raw CSV.
+        if opts.max_wall_hours is not None:
+            elapsed = time.monotonic() - start
+            remaining_hours = opts.max_wall_hours - elapsed / 3600.0
+            if remaining_hours <= 0.25:
+                print(f"Time budget reached: {elapsed / 3600.0:.2f} h elapsed; "
+                      "not starting another job.", flush=True)
+                break
         if opts.max_new_jobs is not None and done >= opts.max_new_jobs:
             break
         raw, summ, cfg, log = job_paths(out, ds, seed)
@@ -199,10 +220,28 @@ def main():
             ["dataset", "seed", "method"]).reset_index(drop=True)
         merged.to_csv(out / "main_raw.csv", index=False)
     print(f"Saved {len(parts)} completed job files; remaining: {len(remaining)}.")
+    if opts.summarize:
+        if parts and any(
+            len({seed for dataset, seed in jobs if dataset == ds
+                 and valid_job(job_paths(out, dataset, seed)[0], dataset, seed)}) == 5
+            for ds in opts.datasets
+        ):
+            print("Summarizing completed five-seed datasets...", flush=True)
+            summary_cmd = [
+                sys.executable, str(ROOT / "scripts" / "summarize_core_campaign.py"),
+                "--raw", str(out / "main_raw.csv"),
+                "--out-dir", str(out),
+            ]
+            proc = subprocess.run(summary_cmd, cwd=ROOT, check=False)
+            if proc.returncode:
+                raise SystemExit("Partial result summary failed; job CSVs remain saved.")
+        else:
+            print("No dataset has all five seeds yet; individual job results are saved.",
+                  flush=True)
     if not remaining:
-        print("All requested jobs complete. Run scripts/summarize_core_campaign.py.")
+        print("All requested jobs complete.", flush=True)
     else:
-        print("Run the same command again to resume.")
+        print("Run the same command again to resume.", flush=True)
 
 
 if __name__ == "__main__":

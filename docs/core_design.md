@@ -41,3 +41,9 @@ The first full 97-method `breast_cancer` seed 0 was performed on an earlier chec
 In the recorded full `breast_cancer` seed 0, 32 QNN trainings used about 29 minutes and distinct implicit-feature computations about 30 minutes. The eight predefined QNN variants and their corresponding representations occupied about 13 minutes of those measured components. This is an estimate for the core campaign, not a benchmarked promise for every dataset.
 
 The historical nine-task table and its 97-method upper envelope cannot be relabeled as a result of this eight-QNN design. The current paper must report new fixed-method means across seeds, alongside any descriptive best-method envelope, with its selection limitation. The full 97-method campaign remains independently available for a broader comparison.
+
+## Eight-hour overnight run
+
+Use `python scripts/run_core_campaign.py --max-wall-hours 8 --summarize` to process a time-limited batch. It stops starting jobs near eight hours and allows the active job to finish, preserving its completed CSV. The method and QNN settings are unchanged. Completed dataset/seed jobs are skipped on subsequent invocations.
+
+The `--summarize` option generates a partial fixed-method table only for datasets with all five seeds. If none is complete, individual results remain available. Use `--collect-only --summarize` to reconstruct merged output without executing more QNN jobs after an unexpected interruption. Windows sleep suspends WSL computation; prevent the computer from sleeping during the overnight run.

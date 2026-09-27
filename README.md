@@ -61,6 +61,22 @@ From a separate checkout of that branch, run `python scripts/run_core_campaign.p
 
 This core design was fixed after reviewing the first corrected-continuation pilot and historical results, so it is not a prospective preregistration. The campaign gives up the 97-method search and cannot support the old nine-task upper-envelope claim without updating the paper's result tables and interpretation.
 
+## Overnight core run (approximately eight hours)
+
+Use a separate checkout of the core branch; do not modify the Git commit or packages in an active campaign. From the core checkout, activate your existing Python environment and start:
+
+```bash
+mkdir -p outputs/core_continuation_v1
+nohup python -u scripts/run_core_campaign.py --max-wall-hours 8 --summarize \
+  > outputs/core_continuation_v1/night.log 2>&1 < /dev/null &
+echo $! > outputs/core_continuation_v1/night.pid
+disown
+```
+
+The runner checks its budget between jobs, allowing the current job to finish before stopping. It keeps each completed dataset/seed CSV and rebuilds `main_raw.csv`. With `--summarize`, it also writes method means and tables for any dataset with five completed seeds. This is an approximate duration, not a hard cutoff. Windows must remain awake, and the computer should be plugged in.
+
+The next morning, see `outputs/core_continuation_v1/night.log`. Resume with `python scripts/run_core_campaign.py --summarize`, or recover aggregated data without launching a job using `python scripts/run_core_campaign.py --collect-only --summarize`. The runner checks the Git commit and package versions before it resumes.
+
 ## Reproduce the corrected multiscale method
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.
