@@ -12,7 +12,7 @@ from pathlib import Path
 import pandas as pd
 import main_qnn_benchmark as bench
 
-CAMPAIGN_DESIGN = "core_preregistered_v1"
+CAMPAIGN_DESIGN = "core_fixed_after_pilot_v1"
 PROFILES = ("full_balanced", "qnn_oriented", "no_detector")
 HYBRID = "standard"
 PCA_READOUTS = ("logreg", "mlp", "svm_rbf", "qnn")

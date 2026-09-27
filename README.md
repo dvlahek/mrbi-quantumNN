@@ -55,11 +55,11 @@ The historical main table selects the best MRBI method by its five-seed **datase
 
 ## Lower-cost, fixed-method experiment
 
-A separate [core design](docs/core_design.md) evaluates eight predefined QNN representations (25 total readout-method rows) for every dataset and seed. It uses the same corrected continuation solver and QNN training settings as the full campaign. The experiment is isolated on branch `experiment/continuation-core-20260927`, so an already-running full campaign remains untouched.
+A separate [core design](docs/core_design.md) evaluates eight fixed-after-pilot QNN representations (25 total readout-method rows) for every dataset and seed. It uses the same corrected continuation solver and QNN training settings as the full campaign. The experiment is isolated on branch `experiment/continuation-core-20260927`, so an already-running full campaign remains untouched.
 
 From a separate checkout of that branch, run `python scripts/run_core_campaign.py --max-new-jobs 1` and then resume with `python scripts/run_core_campaign.py`. Once every job has completed, run `python scripts/summarize_core_campaign.py --require-complete`. The new result package has its own output directory and explicit `campaign_design` tag.
 
-The core campaign gives up the 97-method search and cannot support the old nine-task upper-envelope claim without updating the paper's result tables and interpretation.
+This core design was fixed after reviewing the first corrected-continuation pilot and historical results, so it is not a prospective preregistration. The campaign gives up the 97-method search and cannot support the old nine-task upper-envelope claim without updating the paper's result tables and interpretation.
 
 ## Reproduce the corrected multiscale method
 

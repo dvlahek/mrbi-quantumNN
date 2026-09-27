@@ -1,10 +1,10 @@
-# Predefined core comparison: corrected MRBI continuation
+# Fixed-after-pilot core comparison: corrected MRBI continuation
 
 The full continuation campaign remains available as `scripts/run_continuation_campaign.py`. It evaluates 97 readout-method combinations per dataset/seed. The core campaign reduces this to 25 rows (eight simulated-QNN variants), while retaining the same implicit operator, root solver, stage sequence, datasets, sample cap, split seeds, four-qubit architecture, 60 QNN epochs, and QNN initialization seed.
 
 ## Fixed experimental design
 
-The methods are chosen by their numerical role, not by ranking the pilot result. Every dataset is evaluated at seeds 0–4. Each representation uses the same corresponding QNN training protocol and the same classical control readouts as the full benchmark.
+The methods are fixed for the new campaign using their numerical roles. This narrower design was developed after inspecting the earlier full-sweep results and the first corrected-continuation pilot, so it is **pilot-informed, not prospectively preregistered**. The reported method-level comparisons must retain that selection limitation. Every dataset is evaluated at seeds 0–4. Each representation uses the same corresponding QNN training protocol and the same classical control readouts as the full benchmark.
 
 | Representation | QNN | Logistic regression | SVM-RBF | MLP |
 | --- | :---: | :---: | :---: | :---: |
@@ -19,7 +19,7 @@ The methods are chosen by their numerical role, not by ranking the pilot result.
 
 `full_balanced` and `no_detector` share the same stage schedule and Newton weight. The latter sets the detector weight to zero and acts as the matched detector ablation. `qnn_oriented` is an additional predefined, detector-enabled profile. The forced mode probes the usefulness of an MRBI candidate. Standard hybrid reports the original trigger-and-accept policy.
 
-The core comparison estimates the effects of predefined solver-aware initializers and the detector term. It does not claim that staged continuation itself outperforms a computationally matched final-scale-only optimizer. Such a claim needs a separate continuation-versus-single-scale experiment, preferably with matched objective-evaluation budgets.
+The core comparison estimates the effects of fixed solver-aware initializers and the detector term. It does not claim that staged continuation itself outperforms a computationally matched final-scale-only optimizer. Such a claim needs a separate continuation-versus-single-scale experiment, preferably with matched objective-evaluation budgets.
 
 ## Execution
 
@@ -32,7 +32,7 @@ python scripts/run_core_campaign.py
 python scripts/summarize_core_campaign.py --require-complete
 ```
 
-The default output path is `outputs/core_continuation_v1/`. The driver records a Git commit and Python package versions, rejects mixing runs from another commit or design, and writes raw, summary, configuration and logs for each completed dataset/seed job. It resumes by skipping verified 25-row jobs. The corrected implementation has the unchanged label `mrbi_continuation_v1`, and every new row carries `campaign_design=core_preregistered_v1`.
+The default output path is `outputs/core_continuation_v1/`. The driver records a Git commit and Python package versions, rejects mixing runs from another commit or design, and writes raw, summary, configuration and logs for each completed dataset/seed job. It resumes by skipping verified 25-row jobs. The corrected implementation has the unchanged label `mrbi_continuation_v1`, and every new row carries `campaign_design=core_fixed_after_pilot_v1`.
 
 The first full 97-method `breast_cancer` seed 0 was performed on an earlier checkout. Do not automatically copy it into this campaign. It can serve as an independent cross-check of the corresponding eight methods after confirming source and environment compatibility.
 

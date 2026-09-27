@@ -24,7 +24,7 @@ DEFAULT_DATASETS = (
     "digits_4_vs_9", "digits_5_vs_6",
 )
 VERSION = "mrbi_continuation_v1"
-PLAN = "core_preregistered_v1"
+PLAN = "core_fixed_after_pilot_v1"
 EXPECTED_METHODS = 25
 EXPECTED_QNN = 8
 
