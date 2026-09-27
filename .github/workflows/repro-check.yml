@@ -27,8 +27,17 @@ jobs:
       - name: Run recovered MRBI smoke test
         run: python scripts/run_mrbi_smoke_test.py
 
+      - name: Verify descending-scale MRBI continuation
+        run: python scripts/check_continuation.py
+
       - name: Verify main QNN raw-data coverage and means
         run: python scripts/check_main_raw.py
+
+      - name: Verify recovered five-dataset main summary
+        run: python scripts/check_recovered_summary.py
+
+      - name: Verify resumable campaign arguments
+        run: python scripts/run_continuation_campaign.py --dry-run --datasets breast_cancer --seeds 0
 
       - name: Check manuscript summary consistency
         run: python scripts/check_consistency.py

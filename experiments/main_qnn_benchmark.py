@@ -81,6 +81,8 @@ import mrbi
 
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
+IMPLEMENTATION_VERSION = "mrbi_continuation_v1"
+
 
 # ---------------------------------------------------------------------
 # Optional QNN dependency
@@ -965,6 +967,7 @@ def standardize_pair(Xtr, Xte):
 def add_metadata(row: Dict[str, Any], dataset: str, method: str, representation: str, readout: str, cfg: ExperimentConfig):
     row.update({
         "dataset": dataset,
+        "implementation_version": IMPLEMENTATION_VERSION,
         "method": method,
         "representation": representation,
         "readout": readout,
@@ -1217,9 +1220,9 @@ def parse_args():
     p.add_argument("--easy-layer", action="store_true",
                    help="Use the standard matrix construction instead of the hard regime.")
     p.add_argument("--n-workers", type=int, default=1)
-    p.add_argument("--out-raw", default="article_qnn_final_raw.csv")
-    p.add_argument("--out-summary", default="article_qnn_final_summary.csv")
-    p.add_argument("--out-config", default="article_qnn_final_config.json")
+    p.add_argument("--out-raw", default="article_qnn_continuation_v1_raw.csv")
+    p.add_argument("--out-summary", default="article_qnn_continuation_v1_summary.csv")
+    p.add_argument("--out-config", default="article_qnn_continuation_v1_config.json")
     return p.parse_args()
 
 
@@ -1318,6 +1321,7 @@ def main():
     hybrid_profiles = get_hybrid_profiles(args.mode)
 
     cfg_dump = {
+        "implementation_version": IMPLEMENTATION_VERSION,
         "mode": args.mode,
         "datasets": datasets,
         "seeds": seeds,

@@ -529,13 +529,17 @@ class MRBIOptimizer:
         """
         Build an MRBI initialization candidate, optionally with multiple starts.
         """
-        if self.cfg.use_continuation:
-            sigmas: Sequence[float] = tuple(float(s) for s in self.cfg.sigmas)
-        else:
-            sigmas = (float(self.cfg.sigmas[-1]),)
+        scales: Sequence[float] = tuple(float(s) for s in self.cfg.sigmas)
+        if not scales or any(not np.isfinite(s) or s <= 0 for s in scales):
+            raise ValueError("sigmas must contain positive finite scales.")
+        if self.cfg.use_continuation and any(
+            earlier <= later for earlier, later in zip(scales, scales[1:])
+        ):
+            raise ValueError("Continuation sigmas must be strictly decreasing.")
+        if int(self.cfg.n_starts) < 1:
+            raise ValueError("n_starts must be at least one.")
 
-        if len(sigmas) == 0:
-            raise ValueError("sigmas must contain at least one scale.")
+        sigmas = scales if self.cfg.use_continuation else (scales[-1],)
 
         best_z: Optional[Array] = None
         best_val = float("inf")
@@ -553,8 +557,8 @@ class MRBIOptimizer:
             for sigma in sigmas:
                 z = self._optimize_single_scale(
                     z0=z,
-                    sigma=final_sigma,
-                    maxiter=int(self.cfg.refinement_iters),
+                    sigma=float(sigma),
+                    maxiter=int(self.cfg.maxiter_per_scale),
                     detector_override=True,
                 )
 

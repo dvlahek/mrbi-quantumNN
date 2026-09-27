@@ -12,3 +12,7 @@ spambase_external_summary.csv
 spambase_external_config.json
 multistart_sanity_raw.csv
 multistart_sanity_summary.csv
+
+article_qnn_continuation_v1_raw.csv
+article_qnn_continuation_v1_summary.csv
+article_qnn_continuation_v1_config.json

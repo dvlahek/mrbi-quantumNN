@@ -1,7 +1,9 @@
-# Results used in the manuscript
+# Numerical results
 
-`raw/` contains the two supplied main-experiment CSV files. They cover six full five-seed datasets and seed 0 for `wine_0_vs_2`. `scripts/check_main_raw.py` checks each complete dataset against the published table and prints the remaining coverage gaps.
+`raw/article_qnn_final_raw.csv` and `raw/article_qnn_final_raw2.csv` are the available historical per-seed main-benchmark results. They provide all five seeds for six tasks and one seed for `wine_0_vs_2`.
 
-`supporting_raw/` contains the current three-seed Spambase result and the three-dataset multistart diagnostic. `scripts/check_supporting_raw.py` recomputes their archived summaries.
+`summary_tables/article_qnn_final_summary1.csv` is the recovered five-dataset summary. It contains 97 methods per dataset, each with five runs, including `wine_0_vs_2`, `wine_1_vs_2` and `digits_1_vs_7`. Together with the six complete raw datasets, it supports a numerical check of all nine historical task-level QNN means. The missing per-seed CSVs remain unavailable for three tasks.
 
-`summary_tables/` contains the reported manuscript summaries and input tables for the sensitivity plots. A successful check of these summaries is not a substitute for missing main-benchmark per-seed output.
+`supporting_raw/` contains Spambase and multistart diagnostic raw files. Other `summary_tables/` files contain the manuscript summaries and inputs for the diagnostic figures.
+
+The corrected-continuation campaign writes its new, version-tagged outputs to `outputs/continuation_v1/`. Historical CSVs are not replaced with corrected-method results until the new campaign has completed and has been checked.
