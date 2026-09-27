@@ -1,5 +1,5 @@
 """
-qnn_mrbi_hard_hybrid_benchmark.py
+main_qnn_benchmark.py
 
 Hard-regime benchmark for MRBI-hybrid implicit representations and simulated QNN readouts.
 
@@ -38,13 +38,13 @@ Requirement:
     mrbi.py must be in the same folder as this script.
 
 Fast hard test:
-    python qnn_mrbi_hard_hybrid_benchmark.py --mode hard_quick --no-qnn
+    python main_qnn_benchmark.py --mode hard_quick --no-qnn
 
 Article-style hard test:
-    python qnn_mrbi_hard_hybrid_benchmark.py --mode hard_article --no-qnn --seeds 0 1 2 3 4
+    python main_qnn_benchmark.py --mode hard_article --no-qnn --seeds 0 1 2 3 4
 
 With QNN, smaller:
-    python qnn_mrbi_hard_hybrid_benchmark.py --mode hard_quick --seeds 0 1 --qubits 4 6
+    python main_qnn_benchmark.py --mode hard_quick --seeds 0 1 --qubits 4 6
 
 Scientific warning:
     This still does not prove quantum advantage. QNNs are simulated on a classical computer.
@@ -1198,77 +1198,29 @@ def print_leaderboard(summary: pd.DataFrame, top_k=10):
 # ---------------------------------------------------------------------
 
 def parse_args():
-    p = argparse.ArgumentParser()
-
+    p = argparse.ArgumentParser(description="MRBI-QNN benchmark for the manuscript.")
     p.add_argument("--mode", choices=["hard_quick", "hard_article"], default="hard_quick")
-    p.add_argument("--datasets", nargs="+", default=None)
-    p.add_argument("--seeds", nargs="+", type=int, default=None)
-    p.add_argument("--qubits", nargs="+", type=int, default=None)
-    p.add_argument("--latent-dims", nargs="+", type=int, default=None)
-    p.add_argument("--spectral-radii", nargs="+", type=float, default=None)
-    p.add_argument("--input-scales", nargs="+", type=float, default=None)
-
-    p.add_argument("--max-samples-per-class", type=int, default=None)
-    p.add_argument("--qnn-epochs", type=int, default=None)
+    p.add_argument("--datasets", nargs="+", default=[
+        "breast_cancer", "wine_binary", "wine_0_vs_2", "wine_1_vs_2",
+        "digits_1_vs_7", "digits_2_vs_7", "digits_3_vs_8",
+        "digits_4_vs_9", "digits_5_vs_6",
+    ])
+    p.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2, 3, 4])
+    p.add_argument("--qubits", nargs="+", type=int, default=[4])
+    p.add_argument("--latent-dims", nargs="+", type=int, default=[16])
+    p.add_argument("--spectral-radii", nargs="+", type=float, default=[2.0])
+    p.add_argument("--input-scales", nargs="+", type=float, default=[1.1])
+    p.add_argument("--max-samples-per-class", type=int, default=80)
+    p.add_argument("--qnn-epochs", type=int, default=60)
     p.add_argument("--qnn-layers", type=int, default=2)
     p.add_argument("--no-qnn", action="store_true")
-    p.add_argument(
-        "--easy-layer",
-        action="store_true",
-        help="Disable hard ill-conditioned W construction.",
-    )
-    p.add_argument(
-        "--n-workers",
-        type=int,
-        default=1,
-        help="Number of parallel outer jobs. Use 1 in debugger if multiprocessing causes issues.",
-    )
-
-    p.add_argument("--out-raw", default="qnn_mrbi_hard_raw.csv")
-    p.add_argument("--out-summary", default="qnn_mrbi_hard_summary.csv")
-    p.add_argument("--out-config", default="qnn_mrbi_hard_config.json")
-
-    args = p.parse_args()
-
-    # ============================================================
-    # DEBUGGER CONFIG: ARTICLE QNN TEST
-    # QNN-centered MRBI test
-    # ============================================================
-
-    args.mode = "hard_quick"
-    args.no_qnn = False
-
-    args.datasets = [
-        "breast_cancer",
-        "wine_binary",
-        "wine_0_vs_2",
-        "wine_1_vs_2",
-        "digits_1_vs_7",
-        "digits_2_vs_7",
-        "digits_3_vs_8",
-        "digits_4_vs_9",
-        "digits_5_vs_6",
-    ]
-
-    args.seeds = [0, 1, 2, 3, 4]
-
-    args.qubits = [4]
-    args.latent_dims = [16]
-
-    args.spectral_radii = [2.0]
-    args.input_scales = [1.1]
-
-    args.max_samples_per_class = 80
-    args.qnn_epochs = 60
-    args.qnn_layers = 2
-
-    args.n_workers = 1
-
-    args.out_raw = "article_qnn_final_raw.csv"
-    args.out_summary = "article_qnn_final_summary.csv"
-    args.out_config = "article_qnn_final_config.json"
-
-    return args
+    p.add_argument("--easy-layer", action="store_true",
+                   help="Use the standard matrix construction instead of the hard regime.")
+    p.add_argument("--n-workers", type=int, default=1)
+    p.add_argument("--out-raw", default="article_qnn_final_raw.csv")
+    p.add_argument("--out-summary", default="article_qnn_final_summary.csv")
+    p.add_argument("--out-config", default="article_qnn_final_config.json")
+    return p.parse_args()
 
 
 def run_job_worker(job_args):
@@ -1420,7 +1372,7 @@ def main():
 
     print(f"\nTotal outer jobs: {total}")
     print(f"Parallel workers: {n_workers}")
-    print("Tip: on Windows/debugger, set args.n_workers = 1 if multiprocessing causes problems.")
+    print("On Windows, use --n-workers 1 if multiprocessing causes problems.")
 
     all_results = []
     completed = 0

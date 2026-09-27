@@ -1,38 +1,8 @@
-"""
-qnn_mrbi_article_benchmark.py
+"""Spambase external check for the MRBI-QNN manuscript.
 
-Article-oriented benchmark for simulated QNN readouts and MRBI-hybrid implicit
-representations.
-
-This script assumes that mrbi.py is in the same folder:
-    import mrbi
-
-Install:
-    pip install numpy scipy scikit-learn pandas torch pennylane
-
-Quick test:
-    python qnn_mrbi_article_benchmark.py --mode quick
-
-Stronger article-style test:
-    python qnn_mrbi_article_benchmark.py --mode article --seeds 0 1 2 3 4
-
-Larger qubit sweep, slower:
-    python qnn_mrbi_article_benchmark.py --mode article --qubits 4 6 8 --seeds 0 1 2
-
-Main additions compared with the first prototype:
-    1) Fixed MLP baseline.
-    2) Added SVM-RBF, RandomForest and GradientBoosting baselines.
-    3) Added zero-init implicit features as a control.
-    4) Added MRBI-hybrid implicit features under multiple MRBI configurations.
-    5) Added MRBI ablation without detector.
-    6) Added multiple seed support.
-    7) Added qubit sweep.
-    8) Saves raw results and mean±std summary CSV files.
-
-Important scientific interpretation:
-    This does not demonstrate quantum speedup because all QNNs are simulated on
-    a classical computer. The test is about representation quality, solver-aware
-    initialization, and whether QNN readouts are competitive in small-data regimes.
+The simulated QNN, zero-initialized implicit features and two predefined MRBI
+profiles are evaluated on paired seeds. Published per-seed scores are stored
+separately under results/supporting_raw.
 """
 
 from __future__ import annotations
@@ -41,13 +11,14 @@ import argparse
 import json
 import time
 import warnings
+from pathlib import Path
 from dataclasses import dataclass, asdict, replace
 from typing import Dict, Tuple, Optional, List, Any
 
 import numpy as np
 import pandas as pd
 
-from sklearn.datasets import load_breast_cancer, load_wine, load_iris, load_digits
+from sklearn.datasets import load_breast_cancer, load_wine, load_iris, load_digits, fetch_openml
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.exceptions import ConvergenceWarning
@@ -302,6 +273,16 @@ def load_dataset(name: str, cfg: ExperimentConfig) -> Tuple[np.ndarray, np.ndarr
         X = X[mask]
         y = (y_raw[mask] == 2).astype(int)
 
+
+    elif name == "spambase":
+        # OpenML data_id=44 is the UCI Spambase dataset.
+        # A local internet connection is needed the first time; scikit-learn then caches it.
+        data = fetch_openml(data_id=44, as_frame=False, parser="auto")
+        X = data.data.astype(np.float64)
+        y_raw = np.asarray(data.target)
+        # OpenML may return labels as strings such as "0"/"1".
+        y = y_raw.astype(int)
+
     elif name == "digits_3_vs_8":
         data = load_digits()
         X = data.data.astype(np.float64) / 16.0
@@ -329,7 +310,7 @@ def load_dataset(name: str, cfg: ExperimentConfig) -> Tuple[np.ndarray, np.ndarr
     else:
         raise ValueError(
             f"Unknown dataset '{name}'. Use one of: "
-            "breast_cancer, wine_binary, iris_binary, digits_3_vs_8, "
+            "breast_cancer, wine_binary, iris_binary, spambase, digits_3_vs_8, "
             "digits_1_vs_7, digits_4_vs_9"
         )
 
@@ -1062,22 +1043,22 @@ def parse_args():
     parser.add_argument(
         "--datasets",
         nargs="+",
-        default=None,
-        help="Datasets to run. If omitted, defaults depend on mode.",
+        default=["spambase"],
+        help="Dataset for the external Spambase check.",
     )
-    parser.add_argument("--seeds", nargs="+", type=int, default=None)
-    parser.add_argument("--qubits", nargs="+", type=int, default=None)
-    parser.add_argument("--latent-dims", nargs="+", type=int, default=None)
-    parser.add_argument("--spectral-radii", nargs="+", type=float, default=None)
+    parser.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2])
+    parser.add_argument("--qubits", nargs="+", type=int, default=[4])
+    parser.add_argument("--latent-dims", nargs="+", type=int, default=[16])
+    parser.add_argument("--spectral-radii", nargs="+", type=float, default=[2.25])
 
-    parser.add_argument("--max-samples-per-class", type=int, default=None)
-    parser.add_argument("--qnn-epochs", type=int, default=None)
+    parser.add_argument("--max-samples-per-class", type=int, default=1000)
+    parser.add_argument("--qnn-epochs", type=int, default=80)
     parser.add_argument("--qnn-layers", type=int, default=2)
     parser.add_argument("--no-qnn", action="store_true")
 
-    parser.add_argument("--out-raw", type=str, default="qnn_mrbi_article_raw.csv")
-    parser.add_argument("--out-summary", type=str, default="qnn_mrbi_article_summary.csv")
-    parser.add_argument("--out-config", type=str, default="qnn_mrbi_article_config.json")
+    parser.add_argument("--out-raw", type=str, default="spambase_external_raw.csv")
+    parser.add_argument("--out-summary", type=str, default="spambase_external_summary.csv")
+    parser.add_argument("--out-config", type=str, default="spambase_external_config.json")
 
     return parser.parse_args()
 

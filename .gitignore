@@ -1,6 +1,14 @@
+.venv/
 __pycache__/
 *.pyc
-.venv/
 outputs/
 .DS_Store
 .ipynb_checkpoints/
+article_qnn_final_raw.csv
+article_qnn_final_summary.csv
+article_qnn_final_config.json
+spambase_external_raw.csv
+spambase_external_summary.csv
+spambase_external_config.json
+multistart_sanity_raw.csv
+multistart_sanity_summary.csv

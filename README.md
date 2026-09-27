@@ -1,89 +1,64 @@
-# MRBI-stabilized implicit equilibrium features for simulated QNN readouts
+# MRBI implicit features for simulated QNN readouts
 
-Minimal reproducibility package for the manuscript:
+Code and result checks for *MRBI-Stabilized Implicit Equilibrium Features for Simulated Quantum Neural Network Readouts*, prepared for Neural Processing Letters.
 
-**MRBI-Stabilized Implicit Equilibrium Features for Simulated Quantum Neural Network Readouts**
+The study compares feature representations under the same compact, classically simulated QNN readout. The implicit operator is fixed. The experiments do not establish quantum advantage or hardware performance.
 
-This package checks manuscript-level numerical summaries with a lightweight MRBI implementation. Recovered working-source candidates and supporting raw results are archived separately. Exact provenance of the nine-task main benchmark is not yet established.
+## What is in this repository
 
-## Contents
+- `experiments/main_qnn_benchmark.py` — the recovered nine-task benchmark with its original numerical routines and a cleaned command-line interface. The default arguments match the recorded main experiment.
+- `experiments/mrbi.py` — the recovered MRBI solver module used by the benchmark candidate. Only an inaccurate comment was corrected; its numerical operations were left unchanged.
+- `experiments/spambase_external.py` and `experiments/spambase_external_config.json` — the Spambase external-check runner and its supplied configuration.
+- `experiments/run_multistart_sanity_check.py` — the multistart diagnostic used in the supplementary analysis.
+- `results/raw/` — the two supplied main-benchmark CSVs with the original result columns; line endings have been normalized to LF.
+- `results/supporting_raw/` — the Spambase and multistart raw and summary CSVs.
+- `results/summary_tables/` — archived manuscript tables and data for the spectral-radius and qubit-width plots.
+- `scripts/` — checks and regeneration of table snippets and diagnostic figures.
 
-- `src/mrbi.py`: compact MRBI/hybrid implementation for smoke testing, not a copy of the historical experiment module.
-- `experiments/source_snapshot/`: recovered historical code and a documented scale-loop issue.
-- `results/supporting_raw/`: supplied Spambase and multistart raw and summary CSV files.
-- `scripts/check_supporting_raw.py`: recomputes the supporting numerical checks from these raw files.
-- `results/summary_tables/`: archived CSV summaries used for the manuscript tables and lightweight figures.
-- `scripts/check_consistency.py`: verifies that archived summary values match the manuscript-level reported numbers.
-- `scripts/reproduce_tables.py`: regenerates LaTeX table snippets from the archived CSV summaries.
-- `scripts/make_rho_sensitivity_figure.py`: regenerates the spectral-radius sensitivity figure from CSV data.
-- `scripts/make_qubit_width_heatmap.py`: regenerates the qubit-width sensitivity heatmap from CSV data.
-- `scripts/run_mrbi_smoke_test.py`: runs a fast sanity check of the MRBI/hybrid solver code.
-- `docs/related_numerical_algorithms_article.md`: reference note for the related Numerical Algorithms article.
-- `paper/references_to_add.bib`: BibTeX entry for the related article.
+Earlier prototypes and files outside the submitted paper are kept in the [`archive/pre-npl-cleanup-20260927`](https://github.com/dvlahek/mrbi-quantumNN/tree/archive/pre-npl-cleanup-20260927) branch. The working files were not deleted from Git history.
 
-This repository is intentionally minimal. It is not a full experiment dump. The QNN experiments in the manuscript were simulated classically; no quantum speedup, quantum advantage, or hardware-level result is claimed.
+## Install and verify the reported summaries
 
-## Install
+Use Python 3.11 or a compatible environment:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-The core checks do not require PennyLane or PyTorch. For optional QNN experimentation, install:
-
-```bash
-pip install -r requirements-qnn.txt
-```
-
-## Quick checks
-
-Run from the repository root:
-
-```bash
+python -m pip install -r requirements.txt
 python scripts/run_mrbi_smoke_test.py
+python scripts/check_main_raw.py
 python scripts/check_consistency.py
 python scripts/check_supporting_raw.py
 python scripts/reproduce_tables.py
+python scripts/check_generated_tables.py
 python scripts/make_rho_sensitivity_figure.py
 python scripts/make_qubit_width_heatmap.py
 ```
 
-Generated outputs are written to `outputs/`.
+Regenerated tables and plots are written to `outputs/`. GitHub Actions runs the same checks. They do not retrain the QNN.
 
-## What is reproduced here
+### Coverage of the supplied main-benchmark raw files
 
-The scripts reproduce manuscript table snippets and lightweight diagnostic figures from archived summary CSV files. This is the intended minimal reproducibility layer for checking the numerical values used in the manuscript.
+`article_qnn_final_raw.csv` and `article_qnn_final_raw2.csv` contain all five seeds for six of the nine tasks: `breast_cancer`, `wine_binary`, `digits_2_vs_7`, `digits_3_vs_8`, `digits_4_vs_9`, and `digits_5_vs_6`. For each of these, the reported PCA, zero-initialized and best-MRBI QNN means can be recalculated from the raw data.
 
-The full simulated-QNN sweeps are computationally slower and depend on the exact QNN software stack. They are therefore not the default quick path. The archived summaries preserve the values used in the manuscript, while `src/mrbi.py` exposes the solver-aware initialization method itself.
+`wine_0_vs_2` currently has only seed 0. The supplied files have no rows for `wine_1_vs_2` or `digits_1_vs_7`. The nine-task mean, Wilcoxon statistic and those three dataset rows therefore remain checks against archived summary tables, not full raw-data reproductions. `check_main_raw.py` prints this coverage explicitly.
 
-## Experimental provenance and limitations
+For the main table, the selected MRBI profile is the method with the highest **mean over five seeds within a dataset**. The Spambase external-check summary instead uses the best of two profiles **within each seed**. The latter is a descriptive upper envelope, not a validated single deployment configuration.
 
-The recovered `mrbi.py` code is preserved without changing its numerical behavior. Its scale loop passes the final sigma on every iteration, so it does not implement nominal descending-scale continuation. The separate compact `src/mrbi.py` uses a different Newton correction and hybrid policy. Neither version has been independently certified as the source of the nine-task manuscript results. See `experiments/source_snapshot/README.md`.
+### Source behavior and full reruns
 
-The supplied raw Spambase CSV confirms the current mean balanced accuracies 0.8667 (PCA-QNN), 0.8511 (Zero-QNN), and 0.8617 (Best MRBI-QNN). Best MRBI-QNN is the best of two profiles selected **per seed**, not the average of a single fixed profile. The archived multistart raw file also matches the supplementary table. The original nine-task per-seed `article_qnn_final_raw1.csv` and `article_qnn_final_raw2.csv` files have not been supplied.
+The recovered `experiments/mrbi.py` passes the final scale to each optimization pass, even though its configuration lists several scales. It must not be described as implementing descending-scale continuation. The unedited working-file version is preserved on the archive branch. The previous, smaller `src/mrbi.py` used a different Newton proxy and has also been moved out of `main`.
 
-The main-table mean `delta_pca` is -0.0196 when computed from the nine displayed task rows. The earlier -0.0198 was inconsistent with those rows; only the summary value and its check were corrected.
+To run the simulated-QNN benchmark, install the optional requirements and start the benchmark script:
 
-## Main manuscript summaries represented by the CSV files
+```bash
+python -m pip install -r requirements-qnn.txt
+python experiments/main_qnn_benchmark.py --help
+python experiments/main_qnn_benchmark.py --datasets breast_cancer --seeds 0
+```
 
-- `main_qnn_results.csv`: main nine-task QNN comparison.
-- `pca4_control.csv`: fair input-dimensionality control.
-- `main_statistical_summary.csv`: dataset-level Wilcoxon summary.
-- `classical_readout_check.csv`: logistic regression, SVM-RBF, MLP, RF, and GBM readout check.
-- `spambase_external.csv`: external numeric Spambase check for the current NPL submission version.
-- `rho_sensitivity_delta_summary_for_plot.csv`: spectral-radius sensitivity figure data.
-- `qubit_width_sensitivity_summary_for_plot.csv`: qubit-width sensitivity heatmap data.
+The last command is a single-dataset, single-seed example, not the full experiment. The full default run uses nine tasks, five seeds, four qubits, 16 implicit dimensions, spectral radius 2.0, at most 80 samples per class and 60 QNN epochs. It is substantially slower than the summary checks. Exact software versions and the missing per-seed CSVs for three tasks have not been recovered, so full end-to-end reproduction of all manuscript figures is not yet certified.
 
-## Related numerical-method background
+## Data availability and interpretation
 
-The multiscale residual-detector idea is related to:
+The repository contains the available per-seed results, archived manuscript-level summaries, the relevant numerical code, and scripts for checking tables and regenerating diagnostic figures. Only the checks identified above have been verified against per-seed raw output. The simulated QNN and the fixed implicit operator define the scope of the study.
 
-> Vlahek, D. *A hybrid gaussian–wavelet multiscale algorithm for zero localization in oscillatory functions*. Numerical Algorithms (2026). https://doi.org/10.1007/s11075-026-02484-8
-
-That article studies Gaussian-wavelet multiscale zero localization for oscillatory scalar functions and its use as preprocessing for basin identification and initialization of classical root-finding methods. The present repository uses the same broad numerical motivation in a different application: initialization of a classical implicit equilibrium feature layer before a simulated QNN readout.
-
-## Interpretation note
-
-MRBI changes the initialization of the implicit equilibrium solve. It does not change the downstream QNN architecture. The best-profile MRBI columns in the manuscript are upper-envelope diagnostics over predefined MRBI profiles, not separately validated deployment models. A deployment-oriented version should use a fixed standard profile or select a profile on a validation split.
+The scalar Gaussian–wavelet zero-localization principle is described in Vlahek, D., *A hybrid gaussian–wavelet multiscale algorithm for zero localization in oscillatory functions*, Numerical Algorithms (2026), https://doi.org/10.1007/s11075-026-02484-8. The present study adapts its numerical motivation to vector-valued implicit features before a simulated QNN readout.

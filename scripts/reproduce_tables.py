@@ -35,7 +35,7 @@ def main_table():
         r"\hline",
     ]
     for _, r in df.iterrows():
-        lines.append(f"{str(r['dataset']).replace('_', ' ')} & {fmt(r['pca_qnn'])} & {fmt(r['zero_qnn'])} & {fmt(r['best_mrbi_qnn'])} & {signed(r['delta_zero'])} & {signed(r['delta_pca'])} \\")
+        lines.append(f"{str(r['dataset']).replace('_', ' ')} & {fmt(r['pca_qnn'])} & {fmt(r['zero_qnn'])} & {fmt(r['best_mrbi_qnn'])} & {signed(r['delta_zero'])} & {signed(r['delta_pca'])} \\\\")
     lines += [r"\hline", r"\end{tabular}"]
     write(OUT / "table_main_qnn_results.tex", "\n".join(lines))
 
@@ -49,7 +49,7 @@ def pca4_table():
         r"\hline",
     ]
     for _, r in df.iterrows():
-        lines.append(f"{str(r['dataset']).replace('_', ' ')} & {fmt(r['pca_qnn'])} & {fmt(r['zero_qnn'])} & {fmt(r['zero_pca4_qnn'])} & {fmt(r['best_mrbi_pca4_qnn'])} & {signed(r['delta_pca4'])} \\")
+        lines.append(f"{str(r['dataset']).replace('_', ' ')} & {fmt(r['pca_qnn'])} & {fmt(r['zero_qnn'])} & {fmt(r['zero_pca4_qnn'])} & {fmt(r['best_mrbi_pca4_qnn'])} & {signed(r['delta_pca4'])} \\\\")
     lines += [r"\hline", r"\end{tabular}"]
     write(OUT / "table_pca4_control.tex", "\n".join(lines))
 
@@ -63,7 +63,7 @@ def classical_table():
         r"\hline",
     ]
     for _, r in df.iterrows():
-        lines.append(f"{r['readout']} & {fmt(r['zero'])} & {fmt(r['best_mrbi'])} & {signed(r['mean_delta_zero'])} & {signed(r['median_delta_zero'])} & {r['pos_neu_neg']} \\")
+        lines.append(f"{r['readout']} & {fmt(r['zero'])} & {fmt(r['best_mrbi'])} & {signed(r['mean_delta_zero'])} & {signed(r['median_delta_zero'])} & {r['pos_neu_neg']} \\\\")
     lines += [r"\hline", r"\end{tabular}"]
     write(OUT / "table_classical_readout_check.tex", "\n".join(lines))
 
@@ -75,7 +75,7 @@ def spambase_table():
         r"\hline",
         r"Dataset & PCA-QNN & Zero-QNN & Best MRBI-QNN & $\Delta_{\mathrm{zero}}$ & $\Delta_{\mathrm{PCA}}$ \\",
         r"\hline",
-        f"{r['dataset']} & {fmt(r['pca_qnn'])} & {fmt(r['zero_qnn'])} & {fmt(r['best_mrbi_qnn'])} & {signed(r['delta_zero'])} & {signed(r['delta_pca'])} \\",
+        f"{r['dataset']} & {fmt(r['pca_qnn'])} & {fmt(r['zero_qnn'])} & {fmt(r['best_mrbi_qnn'])} & {signed(r['delta_zero'])} & {signed(r['delta_pca'])} \\\\",
         r"\hline",
         r"\end{tabular}",
     ]

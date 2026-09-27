@@ -21,8 +21,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run MRBI smoke test
+      - name: Verify recovered benchmark syntax
+        run: python -m py_compile experiments/*.py scripts/*.py
+
+      - name: Run recovered MRBI smoke test
         run: python scripts/run_mrbi_smoke_test.py
+
+      - name: Verify main QNN raw-data coverage and means
+        run: python scripts/check_main_raw.py
 
       - name: Check manuscript summary consistency
         run: python scripts/check_consistency.py
@@ -30,11 +36,10 @@ jobs:
       - name: Check archived supporting raw results
         run: python scripts/check_supporting_raw.py
 
-      - name: Check recovered-source Python syntax
-        run: python -m py_compile experiments/source_snapshot/*.py
-
-      - name: Regenerate table snippets
-        run: python scripts/reproduce_tables.py
+      - name: Regenerate and check table snippets
+        run: |
+          python scripts/reproduce_tables.py
+          python scripts/check_generated_tables.py
 
       - name: Regenerate diagnostic figures
         run: |

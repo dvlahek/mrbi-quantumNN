@@ -559,7 +559,7 @@ class MRBIOptimizer:
                 )
 
             if self.cfg.use_refinement and self.cfg.refinement_iters > 0:
-                # refinement without detector pressure; uses smallest sigma
+                # Additional optimization pass at the final scale
                 final_sigma = float(sigmas[-1])
                 z = self._optimize_single_scale(
                     z0=z,
