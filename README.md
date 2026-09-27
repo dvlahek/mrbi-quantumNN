@@ -4,11 +4,14 @@ Minimal reproducibility package for the manuscript:
 
 **MRBI-Stabilized Implicit Equilibrium Features for Simulated Quantum Neural Network Readouts**
 
-The package contains a compact reproducibility path for checking the manuscript-level numerical summaries and the core MRBI implementation.
+This package checks manuscript-level numerical summaries with a lightweight MRBI implementation. Recovered working-source candidates and supporting raw results are archived separately. Exact provenance of the nine-task main benchmark is not yet established.
 
 ## Contents
 
-- `src/mrbi.py`: reusable implementation of Multiscale Residual-Based Initialization (MRBI), root solving, and the hybrid trigger-and-accept wrapper.
+- `src/mrbi.py`: compact MRBI/hybrid implementation for smoke testing, not a copy of the historical experiment module.
+- `experiments/source_snapshot/`: recovered historical code and a documented scale-loop issue.
+- `results/supporting_raw/`: supplied Spambase and multistart raw and summary CSV files.
+- `scripts/check_supporting_raw.py`: recomputes the supporting numerical checks from these raw files.
 - `results/summary_tables/`: archived CSV summaries used for the manuscript tables and lightweight figures.
 - `scripts/check_consistency.py`: verifies that archived summary values match the manuscript-level reported numbers.
 - `scripts/reproduce_tables.py`: regenerates LaTeX table snippets from the archived CSV summaries.
@@ -41,6 +44,7 @@ Run from the repository root:
 ```bash
 python scripts/run_mrbi_smoke_test.py
 python scripts/check_consistency.py
+python scripts/check_supporting_raw.py
 python scripts/reproduce_tables.py
 python scripts/make_rho_sensitivity_figure.py
 python scripts/make_qubit_width_heatmap.py
@@ -53,6 +57,14 @@ Generated outputs are written to `outputs/`.
 The scripts reproduce manuscript table snippets and lightweight diagnostic figures from archived summary CSV files. This is the intended minimal reproducibility layer for checking the numerical values used in the manuscript.
 
 The full simulated-QNN sweeps are computationally slower and depend on the exact QNN software stack. They are therefore not the default quick path. The archived summaries preserve the values used in the manuscript, while `src/mrbi.py` exposes the solver-aware initialization method itself.
+
+## Experimental provenance and limitations
+
+The recovered `mrbi.py` code is preserved without changing its numerical behavior. Its scale loop passes the final sigma on every iteration, so it does not implement nominal descending-scale continuation. The separate compact `src/mrbi.py` uses a different Newton correction and hybrid policy. Neither version has been independently certified as the source of the nine-task manuscript results. See `experiments/source_snapshot/README.md`.
+
+The supplied raw Spambase CSV confirms the current mean balanced accuracies 0.8667 (PCA-QNN), 0.8511 (Zero-QNN), and 0.8617 (Best MRBI-QNN). Best MRBI-QNN is the best of two profiles selected **per seed**, not the average of a single fixed profile. The archived multistart raw file also matches the supplementary table. The original nine-task per-seed `article_qnn_final_raw1.csv` and `article_qnn_final_raw2.csv` files have not been supplied.
+
+The main-table mean `delta_pca` is -0.0196 when computed from the nine displayed task rows. The earlier -0.0198 was inconsistent with those rows; only the summary value and its check were corrected.
 
 ## Main manuscript summaries represented by the CSV files
 

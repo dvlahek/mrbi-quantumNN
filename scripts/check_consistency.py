@@ -14,7 +14,13 @@ def main():
     main_tbl = pd.read_csv(DATA / "main_qnn_results.csv")
     mean_row = main_tbl[main_tbl["dataset"] == "Mean"].iloc[0]
     assert_close("main mean delta_zero", mean_row["delta_zero"], 0.0231)
-    assert_close("main mean delta_pca", mean_row["delta_pca"], -0.0198)
+    assert_close("main mean delta_pca", mean_row["delta_pca"], -0.0196, tol=5e-5)
+    dataset_rows = main_tbl[main_tbl["dataset"] != "Mean"]
+    if len(dataset_rows) != 9:
+        raise AssertionError(f"Expected nine datasets; found {len(dataset_rows)}")
+    for column in ("pca_qnn", "zero_qnn", "best_mrbi_qnn", "delta_zero", "delta_pca"):
+        assert_close(f"main {column}: displayed row mean",
+                     mean_row[column], dataset_rows[column].mean(), tol=5e-5)
 
     stat = pd.read_csv(DATA / "main_statistical_summary.csv")
     values = dict(zip(stat["quantity"], stat["value"]))

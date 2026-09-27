@@ -1,0 +1,74 @@
+{
+  "mode": "quick",
+  "datasets": [
+    "spambase"
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "qubits": [
+    4
+  ],
+  "latent_dims": [
+    16
+  ],
+  "spectral_radii": [
+    2.25
+  ],
+  "max_samples_per_class": 1000,
+  "qnn_epochs": 80,
+  "qnn_layers": 2,
+  "run_qnn": true,
+  "mrbi_profiles": [
+    {
+      "name": "light",
+      "sigmas": [
+        0.2,
+        0.05
+      ],
+      "mc_samples": 4,
+      "maxiter_per_scale": 15,
+      "refinement_iters": 15,
+      "gamma": 0.01,
+      "beta": 0.005,
+      "lambda_zero": 0.1,
+      "search_radius": 0.8,
+      "use_detector": true,
+      "use_newton_term": true,
+      "tau_sigma": 0.04,
+      "residual_trigger_scale": 0.05
+    },
+    {
+      "name": "balanced",
+      "sigmas": [
+        0.3,
+        0.08,
+        0.02
+      ],
+      "mc_samples": 6,
+      "maxiter_per_scale": 30,
+      "refinement_iters": 30,
+      "gamma": 0.02,
+      "beta": 0.01,
+      "lambda_zero": 0.1,
+      "search_radius": 1.0,
+      "use_detector": true,
+      "use_newton_term": true,
+      "tau_sigma": 0.05,
+      "residual_trigger_scale": 0.05
+    }
+  ],
+  "readouts_pca": [
+    "logreg",
+    "mlp",
+    "svm_rbf",
+    "qnn"
+  ],
+  "readouts_implicit": [
+    "logreg",
+    "svm_rbf",
+    "qnn"
+  ]
+}

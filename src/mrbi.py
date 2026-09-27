@@ -4,6 +4,10 @@ Minimal MRBI implementation for the MRBI-QNN reproducibility package.
 The module implements the classical implicit tanh layer used in the paper,
 a root-solver wrapper, Multiscale Residual-Based Initialization (MRBI), and a
 hybrid trigger-and-accept solve. It is intentionally small and dependency-light.
+
+This smoke-test implementation is not identical to the recovered historical
+experiment module in experiments/source_snapshot/mrbi.py. The scale loop,
+Newton proxy and hybrid policies differ; see the source-snapshot README.
 """
 
 from __future__ import annotations

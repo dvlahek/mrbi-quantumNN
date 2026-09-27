@@ -27,6 +27,12 @@ jobs:
       - name: Check manuscript summary consistency
         run: python scripts/check_consistency.py
 
+      - name: Check archived supporting raw results
+        run: python scripts/check_supporting_raw.py
+
+      - name: Check recovered-source Python syntax
+        run: python -m py_compile experiments/source_snapshot/*.py
+
       - name: Regenerate table snippets
         run: python scripts/reproduce_tables.py
 
