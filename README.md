@@ -111,6 +111,17 @@ skips MRBI altogether when zero initialization already converges.
 The old stage diagnostic exposed this possibility; the checkpoint
 pilot is exploratory and does not retrain QNN or change full results.
 
+## Frozen fresh-seed numerical gate
+
+The [held-out single-stage coarse/fine comparison](docs/heldout_single_stage.md)
+uses new seeds 5–9 and one capped root-initialization stage with an
+identical zero-root gate and shared Gaussian probes in all four paired
+arms. It tests the previously observed coarse checkpoint mechanism
+without reusing seeds 0–4 for the primary numerical outcome. It
+does **not** train QNN or change the completed full-campaign data.
+All methods' actual F/J and optimization costs are recorded; identical
+limits do not imply equal realized work.
+
 ## Reproduce the corrected multiscale method
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.

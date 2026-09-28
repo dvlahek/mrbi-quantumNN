@@ -51,6 +51,9 @@ jobs:
       - name: Verify stage-one checkpoint root handling and F/J accounting
         run: python scripts/test_checkpoint_homotopy.py
 
+      - name: Verify frozen fresh-seed single-stage experiment without inspecting held-out outcomes
+        run: python scripts/test_heldout_single_stage.py
+
       - name: Check manuscript summary consistency
         run: python scripts/check_consistency.py
 
