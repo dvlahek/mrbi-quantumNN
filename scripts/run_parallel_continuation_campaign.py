@@ -214,7 +214,7 @@ def main():
     if opts.workers < 1:
         raise SystemExit("--workers must be at least one.")
     available = len(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else os.cpu_count()
-    if available and opts.workers > available:
+    if available and opts.workers > available and not (opts.dry_run or opts.verify_only):
         raise SystemExit(f"Requested {opts.workers} workers but only {available} logical CPUs are available.")
     if opts.max_new_jobs is not None and opts.max_new_jobs < 1:
         raise SystemExit("--max-new-jobs must be positive.")
