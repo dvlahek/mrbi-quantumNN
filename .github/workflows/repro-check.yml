@@ -48,6 +48,9 @@ jobs:
       - name: Verify smoothed-residual homotopy is opt-in and budget-capped
         run: python scripts/test_smoothed_homotopy.py
 
+      - name: Verify stage-one checkpoint root handling and F/J accounting
+        run: python scripts/test_checkpoint_homotopy.py
+
       - name: Check manuscript summary consistency
         run: python scripts/check_consistency.py
 

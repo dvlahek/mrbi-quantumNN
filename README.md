@@ -101,6 +101,16 @@ completed benchmark or its reported results. The four arms have the
 same objective/residual evaluation ceilings but can consume different
 realized budgets; those counts are measured before drawing conclusions.
 
+## Stage-one checkpoint pilot
+
+A separate [solver-aware checkpoint development pilot](docs/checkpoint_homotopy_pilot.md)
+retains an early successful root solve instead of discarding it during
+subsequent continuation stages. It applies the same checkpoint and root
+check to four matched arms, counts all F/J and root evaluations, and
+skips MRBI altogether when zero initialization already converges.
+The old stage diagnostic exposed this possibility; the checkpoint
+pilot is exploratory and does not retrain QNN or change full results.
+
 ## Reproduce the corrected multiscale method
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.
