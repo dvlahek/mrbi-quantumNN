@@ -1,52 +1,43 @@
-# Paired final-scale ablation for the corrected MRBI method
+# Full-campaign final-sigma ablation (fixed profile)
 
-This branch adds one fixed, pilot-informed comparison: the `forced_full_balanced_qnn`
-continuation result from either the **completed full 97-method campaign** or the
-completed eight-QNN core campaign versus a new
-`final_sigma_repeated_full_balanced_qnn` control. No observations are used to tune
-the implicit operator, QNN, or MRBI profile. The existing full and core campaigns and historical results are never overwritten.
+The canonical paired comparison uses the completed full corrected-continuation
+97-method campaign (9 tasks × 5 seeds) as the source and runs only one new
+control for each dataset/seed. It does not retrain the continuation QNN. The
+fixed method is `forced_full_balanced_qnn`; the control is
+`final_sigma_repeated_full_balanced_qnn`.
 
-## What is held fixed?
+## Controlled difference
 
-Both arms use the same breast-cancer, wine and digit tasks, seeds 0–4, dataset
-splits, fixed implicit operator, root solver and forced acceptance policy. The
-QNN uses four qubits, two layers, 60 epochs and seed `dataset_seed + 777`.
-`full_balanced` uses `sigmas=(0.70, 0.25, 0.08, 0.02)`, 10 antithetic
-Gaussian detector probes, four L-BFGS-B stages of at most 60 iterations and a
-fifth refinement stage of at most 60 iterations.
+Both arms share the same data split, implicit operator, root solver, forced
+acceptance rule, antithetic detector probes, QNN architecture and training
+seed. The continuation arm optimizes the MRBI objective at
+`(0.70, 0.25, 0.08, 0.02)`; the control runs four stages at `0.02`.
+Both have a fifth final-scale refinement stage. All five L-BFGS-B stages
+have the same respective maximum iteration limits in both arms. The control
+pre-generates the nominal scale probe sets to preserve RNG ordering and uses
+the same fixed final-scale probe set as the continuation arm.
 
-The reference continuation optimizes at `0.70 → 0.25 → 0.08 → 0.02 → 0.02`.
-The final-sigma control optimizes at `0.02 → 0.02 → 0.02 → 0.02 → 0.02`.
-The control pre-generates the probe sets for all four nominal scales, preserving
-the same detector probe draws and subsequent sample RNG state as the continuation
-arm. The baseline's final-scale probes are the same ones as in the reference.
-The code change is opt-in; ordinary corrected continuation retains its original
-stage order and behavior.
+Equal stage limits do **not** enforce equal objective evaluation counts.
+Report the measured objective calls and feature computation time alongside
+root success and QNN balanced accuracy. The comparison was designed after
+the earlier campaign and remains exploratory. No claims of quantum advantage
+or improvement across every MRBI profile follow from it.
 
-**Computational matching is by five L-BFGS-B stages and equal per-stage iteration
-ceilings.** Actual objective evaluations and wall times can differ because the
-optimizer may converge early. We measure and report both; do not claim exact
-evaluation-budget equality. A strict equal-evaluation-budget experiment would
-require additional controls.
+## Observed outcome (completed 45 pairs)
 
-Only one forced profile is tested to isolate the scale schedule. The hybrid
-trigger policies, alternative profiles and detector-off conditions are not part
-of this comparison. The design was fixed after inspecting the earlier campaign
-and should be reported as an exploratory ablation.
+The mean per-task QNN balanced-accuracy difference, continuation minus
+repeated final scale, is +0.0023: four positive tasks, one tie, four
+negative tasks; exploratory two-sided Wilcoxon p=0.5703. The mean root
+success difference is +0.00083. Continuation uses more objective calls:
+2729 versus 2175 per test sample on average over tasks. The stage schedule
+does not show an established independent benefit for this fixed profile.
 
-## Ryzen WSL: use the completed full campaign as reference
+## Reproduce with the full Ryzen campaign
 
-The full campaign was run in three shards, and its 45-job merged raw CSV was
-written to `outputs/continuation_v1/main_raw.csv`. It does **not** have a
-combined environment manifest. Pass all three source shard manifests with
-`--reference-env`. The runner verifies the 97-method, 32-QNN coverage of
-every requested dataset/seed, requires the shards to have the same source Git
-commit and package versions, checks their dataset/seed coverage, and refuses
-to run under a different Python package environment.
-
-Do not change the active full-campaign checkout or its .venv. Create an
-independent checkout of the ablation branch, activate the full campaign's
-existing venv, and run one control first:
+Use a separate checkout of branch
+`experiment/continuation-final-sigma-ablation-20260928` and activate the
+*same venv* used to compute the full campaign. Keep the original full
+checkout and results unchanged.
 
 ```bash
 cd ~
@@ -63,62 +54,18 @@ python scripts/run_final_sigma_ablation.py \
   --reference-env "$FULL/shard1/environment.json" \
                   "$FULL/shard2/environment.json" \
                   "$FULL/shard3/environment.json" \
-  --max-new-jobs 1 --summarize
+  --out-dir outputs/final_sigma_ablation_full_ryzen_v1 \
+  --summarize
 ```
 
-Once the first control has been checked, repeat the same command without
-`--max-new-jobs 1`. Optionally add `--max-wall-hours 8` for an approximate
-overnight budget; completed jobs are skipped on resumption. Never combine
-controls generated against different reference raw CSV hashes or package
-versions.
-
-## Local WSL commands (original core campaign)
-
-Use a **new** checkout, keeping the successful core run untouched. Activate the
-**same venv** used for the core experiment:
-
-```bash
-cd ~
-git clone --branch experiment/continuation-final-sigma-ablation-20260928 \
-  --single-branch https://github.com/dvlahek/mrbi-quantumNN.git mrbi-qnn-final-ablation
-cd ~/mrbi-qnn-final-ablation
-source ~/mrbi-qnn-continuation-run/.venv/bin/activate
-python scripts/test_final_sigma_ablation.py
-
-REF="$HOME/mrbi-qnn-core-night-8h/outputs/core_continuation_v1/main_raw.csv"
-python scripts/run_final_sigma_ablation.py --reference-raw "$REF" \
-  --max-new-jobs 1 --summarize
-```
-
-The reference environment is read from `environment.json` next to the
-reference raw CSV. The driver checks that Python package versions match. It
-also records the reference CSV SHA-256, source Git commit, control Git commit
-and package versions. It refuses to resume with a different reference or
-environment. Every completed control gets a one-row raw CSV, config and log,
-and is skipped on resumption.
-
-After inspecting the pilot, continue all pending tasks:
-
-```bash
-python scripts/run_final_sigma_ablation.py --reference-raw "$REF" --summarize
-```
-
-To run for approximately eight hours, add `--max-wall-hours 8`. This limit
-is checked between jobs; the current job may finish after the deadline. An
-interrupted run resumes by issuing the same command, without rerunning valid
-jobs. `--collect-only --summarize` rebuilds the aggregate from saved files.
-
-After all 45 controls complete, the driver generates
-`outputs/final_sigma_ablation_v1/main_raw.csv`,
+The runner verifies all 97 methods and 32 QNN rows in each requested source
+job, the source shard manifests and package versions, the source raw file
+SHA-256 and the source and control Git commits. It skips completed controls.
+It writes each control's raw/config/log, then aggregated `main_raw.csv`,
 `paired_seed_results.csv`, `dataset_comparison.csv` and
-`ablation_statistics.json`. A two-sided Wilcoxon value is descriptive and
-exploratory; the dataset, not the individual seed, is the independent
-comparison unit. Positive QNN differences mean continuation outperformed the
-final-scale control.
+`ablation_statistics.json`.
 
-## What to send for review
-
-After the first job, send
-`outputs/final_sigma_ablation_v1/jobs/breast_cancer_seed0_raw.csv` and its
-`.log`. After completion, send the aggregated `main_raw.csv`,
-`dataset_comparison.csv` and `ablation_statistics.json`.
+Pass `--max-new-jobs 1` to run one control first, or
+`--max-wall-hours 8` for an approximately eight-hour run. Jobs already
+saved are not rerun. For the completed campaign, the three summary outputs
+and 45-row control raw should be retained with the full benchmark provenance.

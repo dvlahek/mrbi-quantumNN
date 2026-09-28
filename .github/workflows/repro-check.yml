@@ -39,12 +39,6 @@ jobs:
       - name: Verify resumable campaign arguments
         run: python scripts/run_continuation_campaign.py --dry-run --datasets breast_cancer --seeds 0
 
-      - name: Verify fixed core design
-        run: python scripts/test_core_plan.py
-
-      - name: Verify resumable core-campaign arguments
-        run: python scripts/run_core_campaign.py --dry-run --datasets breast_cancer --seeds 0 --max-wall-hours 8 --summarize
-
       - name: Verify fixed-profile final-scale ablation
         run: python scripts/test_final_sigma_ablation.py
 

@@ -18,8 +18,7 @@ from sklearn.model_selection import train_test_split
 import main_qnn_benchmark as bench
 
 PLAN = "final_sigma_repeated_vs_continuation_v1"
-SOURCE_PLAN = "core_fixed_after_pilot_v1"
-FULL_SOURCE_PLAN = "full_corrected_continuation_v1"
+SOURCE_PLAN = "full_corrected_continuation_v1"
 METHOD = "final_sigma_repeated_full_balanced_qnn"
 SOURCE_METHOD = "forced_full_balanced_qnn"
 DATASETS = (
@@ -41,15 +40,14 @@ def get_reference(path: Path, dataset: str, seed: int):
     if not source["implementation_version"].eq(bench.IMPLEMENTATION_VERSION).all():
         raise ValueError("Reference has another implementation version")
     if "campaign_design" in source.columns:
-        if not source["campaign_design"].eq(SOURCE_PLAN).all():
-            raise ValueError("Reference has an unexpected campaign design")
-        source_plan, expected_methods = SOURCE_PLAN, 25
-    else:
-        source_plan, expected_methods = FULL_SOURCE_PLAN, 97
+        raise ValueError("Only the full 97-method continuation campaign is supported")
+    source_plan, expected_methods = SOURCE_PLAN, 97
     job_rows = source[
         (source["dataset"] == dataset) & (source["seed"] == seed)
     ]
-    if len(job_rows) != expected_methods or job_rows["method"].nunique() != expected_methods:
+    if (len(job_rows) != expected_methods
+            or job_rows["method"].nunique() != expected_methods
+            or job_rows["readout"].eq("qnn").sum() != 32):
         raise ValueError(
             f"Reference {source_plan} does not have {expected_methods} distinct "
             f"methods for {dataset} seed={seed}"

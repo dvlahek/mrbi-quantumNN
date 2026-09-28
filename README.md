@@ -53,41 +53,35 @@ The two historical main raw files have all five seeds for six tasks and only see
 
 The historical main table selects the best MRBI method by its five-seed **dataset-level mean**. The separate Spambase external check selects the best of two MRBI profiles within each seed, so its best-profile column is a descriptive upper envelope.
 
-## Lower-cost, fixed-method experiment
+## Current full corrected-continuation campaign
 
-A separate [core design](docs/core_design.md) evaluates eight fixed-after-pilot QNN representations (25 total readout-method rows) for every dataset and seed. It uses the same corrected continuation solver and QNN training settings as the full campaign. The experiment is isolated on branch `experiment/continuation-core-20260927`, so an already-running full campaign remains untouched.
+The current evidence is the completed **full** benchmark: nine tasks, five seeds,
+97 readout-method rows per task and seed (32 QNN representations), totaling
+4,365 raw rows. The complete run used the corrected descending-scale MRBI
+implementation and the fixed experiment settings in
+`scripts/run_continuation_campaign.py`.
 
-From a separate checkout of that branch, run `python scripts/run_core_campaign.py --max-new-jobs 1` and then resume with `python scripts/run_core_campaign.py`. Once every job has completed, run `python scripts/summarize_core_campaign.py --require-complete`. The new result package has its own output directory and explicit `campaign_design` tag.
+The best-per-task QNN upper envelope improves mean balanced accuracy over
+zero-initialized QNN by +0.0211 on eight of nine tasks. This is **not** the
+performance of one fixed method; the nominal Wilcoxon test is not adjusted
+for choosing a profile separately on each task. PCA-QNN still has a higher
+mean balanced accuracy on every task.
 
-This core design was fixed after reviewing the first corrected-continuation pilot and historical results, so it is not a prospective preregistration. The campaign gives up the 97-method search and cannot support the old nine-task upper-envelope claim without updating the paper's result tables and interpretation.
+The full raw CSV and its three source-shard environments were generated on
+the Ryzen workstation. The `results/raw/` and `results/summary_tables/`
+files checked in before this campaign are historical audit material, **not**
+the corrected full campaign's current results. Do not reproduce the paper's
+current claims from those archived files.
 
-## Overnight core run (approximately eight hours)
+## Fixed-profile final-sigma ablation
 
-Use a separate checkout of the core branch; do not modify the Git commit or packages in an active campaign. From the core checkout, activate your existing Python environment and start:
-
-```bash
-mkdir -p outputs/core_continuation_v1
-nohup python -u scripts/run_core_campaign.py --max-wall-hours 8 --summarize \
-  > outputs/core_continuation_v1/night.log 2>&1 < /dev/null &
-echo $! > outputs/core_continuation_v1/night.pid
-disown
-```
-
-The runner checks its budget between jobs, allowing the current job to finish before stopping. It keeps each completed dataset/seed CSV and rebuilds `main_raw.csv`. With `--summarize`, it also writes method means and tables for any dataset with five completed seeds. This is an approximate duration, not a hard cutoff. Windows must remain awake, and the computer should be plugged in.
-
-The next morning, see `outputs/core_continuation_v1/night.log`. Resume with `python scripts/run_core_campaign.py --summarize`, or recover aggregated data without launching a job using `python scripts/run_core_campaign.py --collect-only --summarize`. The runner checks the Git commit and package versions before it resumes.
-
-## Fixed-profile scale ablation
-
-The [paired final-sigma ablation](docs/final_sigma_ablation.md), on a separate
-`experiment/continuation-final-sigma-ablation-20260928` branch, compares the
-existing `forced_full_balanced_qnn` continuation results with one new QNN
-control that optimizes at the final scale throughout the same number of
-L-BFGS-B stages. It reads the completed core `main_raw.csv` as a reference;
-it does **not** retrain the existing continuation arm. The design is
-pilot-informed and its test is exploratory. The control records actual
-objective calls and feature computation time, since matching stagewise
-iteration ceilings does not guarantee identical work.
+The [paired full-campaign ablation](docs/final_sigma_ablation.md) uses the
+full benchmark's `forced_full_balanced_qnn` rows as its fixed continuation
+reference and computes only the repeated-final-sigma control. Across nine
+tasks, the mean balanced-accuracy difference (continuation minus control)
+is +0.0023, with an exploratory two-sided Wilcoxon p=0.5703. The continuation
+arm makes more objective calls. This does not establish an independent
+advantage of descending-scale optimization for this fixed profile.
 
 ## Reproduce the corrected multiscale method
 

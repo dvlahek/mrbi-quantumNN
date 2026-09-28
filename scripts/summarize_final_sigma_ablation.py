@@ -20,8 +20,7 @@ DATASETS = (
 )
 SEEDS = {0, 1, 2, 3, 4}
 PLAN = "final_sigma_repeated_vs_continuation_v1"
-SOURCE_PLAN = "core_fixed_after_pilot_v1"
-FULL_SOURCE_PLAN = "full_corrected_continuation_v1"
+SOURCE_PLAN = "full_corrected_continuation_v1"
 VERSION = "mrbi_continuation_v1"
 SOURCE_METHOD = "forced_full_balanced_qnn"
 CONTROL_METHOD = "final_sigma_repeated_full_balanced_qnn"
@@ -45,11 +44,8 @@ def analyse(control_raw: Path, reference_raw: Path, out_dir: Path, require_compl
     if not {"ablation_design", "ablation_arm"}.issubset(control.columns):
         raise SystemExit("The final-sigma raw CSV lacks the ablation labels")
     if "campaign_design" in source.columns:
-        if not source["campaign_design"].eq(SOURCE_PLAN).all():
-            raise SystemExit("Unexpected core reference campaign design")
-        source_plan = SOURCE_PLAN
-    else:
-        source_plan = FULL_SOURCE_PLAN
+        raise SystemExit("Only the full 97-method continuation campaign is supported")
+    source_plan = SOURCE_PLAN
     if (not control["implementation_version"].eq(VERSION).all()
             or not control["ablation_design"].eq(PLAN).all()
             or not control["ablation_arm"].eq("final_sigma_repeated").all()

@@ -26,8 +26,7 @@ DATASETS = (
 )
 SEEDS = (0, 1, 2, 3, 4)
 PLAN = "final_sigma_repeated_vs_continuation_v1"
-SOURCE_PLAN = "core_fixed_after_pilot_v1"
-FULL_SOURCE_PLAN = "full_corrected_continuation_v1"
+SOURCE_PLAN = "full_corrected_continuation_v1"
 VERSION = "mrbi_continuation_v1"
 SOURCE_METHOD = "forced_full_balanced_qnn"
 CONTROL_METHOD = "final_sigma_repeated_full_balanced_qnn"
@@ -36,8 +35,8 @@ CONTROL_METHOD = "final_sigma_repeated_full_balanced_qnn"
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reference-raw", required=True, type=Path)
-    parser.add_argument("--reference-env", type=Path, nargs="+", default=None,
-                        help="Core environment JSON, or all three full-campaign shard environments.")
+    parser.add_argument("--reference-env", type=Path, nargs="+", required=True,
+                        help="All source full-campaign shard environment.json files.")
     parser.add_argument("--datasets", nargs="+", choices=DATASETS,
                         default=list(DATASETS))
     parser.add_argument("--seeds", nargs="+", type=int, default=list(SEEDS))
@@ -97,11 +96,8 @@ def source_reference(path, jobs):
     if not df["implementation_version"].eq(VERSION).all():
         raise SystemExit("Reference must use the corrected-continuation implementation.")
     if "campaign_design" in df.columns:
-        if not df["campaign_design"].eq(SOURCE_PLAN).all():
-            raise SystemExit("Unexpected reference campaign design.")
-        source_plan, expected_methods, expected_qnn = SOURCE_PLAN, 25, 8
-    else:
-        source_plan, expected_methods, expected_qnn = FULL_SOURCE_PLAN, 97, 32
+        raise SystemExit("Only the full corrected-continuation campaign is supported.")
+    source_plan, expected_methods, expected_qnn = SOURCE_PLAN, 97, 32
     if df.duplicated(["dataset", "seed", "method"]).any():
         raise SystemExit("Duplicate dataset/seed/method in reference.")
     for ds, seed in jobs:
@@ -156,11 +152,7 @@ def main():
     ref_path = opts.reference_raw.resolve()
     jobs = [(ds, seed) for ds in opts.datasets for seed in opts.seeds]
     reference_sha, source_plan = source_reference(ref_path, jobs)
-    env_paths = [
-        path.resolve() for path in (
-            opts.reference_env or [ref_path.with_name("environment.json")]
-        )
-    ]
+    env_paths = [path.resolve() for path in opts.reference_env]
     if len(set(env_paths)) != len(env_paths):
         raise SystemExit("Duplicate source environment paths.")
     for path in env_paths:
@@ -172,10 +164,7 @@ def main():
     for reference_env in reference_envs:
         if reference_env.get("implementation_version") != VERSION:
             raise SystemExit("Reference environment implementation version differs.")
-        if source_plan == SOURCE_PLAN:
-            if reference_env.get("campaign_design") != SOURCE_PLAN:
-                raise SystemExit("Expected the core campaign environment.")
-        elif reference_env.get("campaign_design") not in (None, FULL_SOURCE_PLAN):
+        if reference_env.get("campaign_design") not in (None, SOURCE_PLAN):
             raise SystemExit("Expected the full corrected-continuation campaign environment.")
 
     source_commits = {item.get("git_commit") for item in reference_envs}
@@ -186,20 +175,18 @@ def main():
         item.get("packages") != source_packages for item in reference_envs
     ):
         raise SystemExit("Reference shards use different or missing package versions.")
-    if source_plan == FULL_SOURCE_PLAN:
-        # A merged full raw CSV does not have a combined environment file.
-        # Require the provenance JSON of every shard covering requested jobs.
-        source_jobs = set()
-        for item in reference_envs:
-            shard_datasets, shard_seeds = item.get("datasets"), item.get("seeds")
-            if not shard_datasets or not shard_seeds:
-                raise SystemExit("Full reference shard lacks its dataset/seed manifest.")
-            shard_jobs = {(ds, int(seed)) for ds in shard_datasets for seed in shard_seeds}
-            if source_jobs & shard_jobs:
-                raise SystemExit("Overlapping full-campaign source shard manifests.")
-            source_jobs.update(shard_jobs)
-        if not set(jobs).issubset(source_jobs):
-            raise SystemExit("Missing source shard environment for a requested job.")
+    # Require provenance for every job in the three-shard full campaign.
+    source_jobs = set()
+    for item in reference_envs:
+        shard_datasets, shard_seeds = item.get("datasets"), item.get("seeds")
+        if not shard_datasets or not shard_seeds:
+            raise SystemExit("Full reference shard lacks its dataset/seed manifest.")
+        shard_jobs = {(ds, int(seed)) for ds in shard_datasets for seed in shard_seeds}
+        if source_jobs & shard_jobs:
+            raise SystemExit("Overlapping full-campaign source shard manifests.")
+        source_jobs.update(shard_jobs)
+    if not set(jobs).issubset(source_jobs):
+        raise SystemExit("Missing source shard environment for a requested job.")
 
     env = snapshot()
     if env["packages"] != source_packages:
