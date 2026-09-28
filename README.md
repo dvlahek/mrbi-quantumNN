@@ -77,6 +77,18 @@ The runner checks its budget between jobs, allowing the current job to finish be
 
 The next morning, see `outputs/core_continuation_v1/night.log`. Resume with `python scripts/run_core_campaign.py --summarize`, or recover aggregated data without launching a job using `python scripts/run_core_campaign.py --collect-only --summarize`. The runner checks the Git commit and package versions before it resumes.
 
+## Fixed-profile scale ablation
+
+The [paired final-sigma ablation](docs/final_sigma_ablation.md), on a separate
+`experiment/continuation-final-sigma-ablation-20260928` branch, compares the
+existing `forced_full_balanced_qnn` continuation results with one new QNN
+control that optimizes at the final scale throughout the same number of
+L-BFGS-B stages. It reads the completed core `main_raw.csv` as a reference;
+it does **not** retrain the existing continuation arm. The design is
+pilot-informed and its test is exploratory. The control records actual
+objective calls and feature computation time, since matching stagewise
+iteration ceilings does not guarantee identical work.
+
 ## Reproduce the corrected multiscale method
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.

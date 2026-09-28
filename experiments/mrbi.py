@@ -137,6 +137,9 @@ class MRBIConfig:
     refinement_iters: int = 120
 
     use_continuation: bool = True
+    # Ablation only: keep the number and budgets of the stages, but
+    # optimize at the final sigma on every stage. The default is unchanged.
+    repeat_final_sigma: bool = False
     use_refinement: bool = True
     use_detector: bool = True
     use_newton_term: bool = True
@@ -538,6 +541,13 @@ class MRBIOptimizer:
             raise ValueError("Continuation sigmas must be strictly decreasing.")
         if int(self.cfg.n_starts) < 1:
             raise ValueError("n_starts must be at least one.")
+        if self.cfg.repeat_final_sigma and (
+            not self.cfg.use_continuation or not self.cfg.use_fixed_probes_per_scale
+        ):
+            raise ValueError(
+                "The final-sigma ablation requires the full stage schedule "
+                "and fixed probes per scale."
+            )
 
         sigmas = scales if self.cfg.use_continuation else (scales[-1],)
 
@@ -554,10 +564,18 @@ class MRBIOptimizer:
                 ).astype(np.float64)
                 z = np.clip(z, -self.cfg.search_radius, self.cfg.search_radius)
             final_sigma = float(sigmas[-1])
+            if self.cfg.repeat_final_sigma and self.cfg.use_detector and self.cfg.gamma != 0.0:
+                # Consume the same Gaussian draws as continuation: all stages
+                # use the same fixed per-sigma probes; only the objective
+                # sigma supplied to L-BFGS-B differs. This preserves the RNG
+                # position at the start of the next input sample.
+                for sigma in sigmas:
+                    self._get_probes(float(sigma))
             for sigma in sigmas:
+                stage_sigma = final_sigma if self.cfg.repeat_final_sigma else float(sigma)
                 z = self._optimize_single_scale(
                     z0=z,
-                    sigma=float(sigma),
+                    sigma=stage_sigma,
                     maxiter=int(self.cfg.maxiter_per_scale),
                     detector_override=True,
                 )

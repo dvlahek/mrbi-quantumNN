@@ -143,6 +143,7 @@ class ExperimentConfig:
     search_radius: float = 1.50
     use_detector: bool = True
     use_newton_term: bool = True
+    repeat_final_sigma: bool = False  # False preserves corrected continuation
 
     # Hybrid config
     hybrid_name: str = "standard"
@@ -735,6 +736,7 @@ def make_mrbi_cfg(cfg: ExperimentConfig):
         maxiter_per_scale=cfg.maxiter_per_scale,
         refinement_iters=cfg.refinement_iters,
         use_continuation=True,
+        repeat_final_sigma=cfg.repeat_final_sigma,
         use_refinement=True,
         use_detector=cfg.use_detector,
         use_newton_term=cfg.use_newton_term,
