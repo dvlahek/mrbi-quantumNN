@@ -4,6 +4,32 @@ Code and numerical results for *MRBI-Stabilized Implicit Equilibrium Features fo
 
 The study compares representations under a fixed implicit operator and the same compact, classically simulated QNN readout. It does not claim quantum advantage or hardware performance.
 
+## Canonical results: full corrected-continuation campaign
+
+The relevant QNN benchmark is the completed **full** corrected-continuation
+campaign on the Ryzen workstation: nine tasks, five seeds per task, 97
+readout-method rows per seed (32 QNN variants), totaling 4,365 raw rows.
+
+The best-per-task MRBI-QNN upper envelope improves mean balanced accuracy
+relative to Zero-QNN by +0.0211 on eight of nine tasks. This selects the
+highest five-seed profile mean separately on each task; it does **not**
+establish the gain of a single fixed method. The nominal p=0.0039 is
+unadjusted for profile selection. PCA-QNN remains higher on every task.
+
+The paired `forced_full_balanced_qnn` ablation is maintained on the
+[full-reference final-sigma branch](https://github.com/dvlahek/mrbi-quantumNN/tree/experiment/continuation-final-sigma-ablation-20260928).
+It reports a mean QNN balanced-accuracy difference of +0.0023 for
+continuation minus repeated final-sigma optimization (exploratory two-sided
+p=0.5703), with more objective evaluations for continuation. This does not
+establish a separate advantage from the scale schedule.
+
+**Provenance:** the full raw benchmark and paired control were generated
+locally; the `results/raw/` and `results/summary_tables/` CSVs already
+tracked on this branch are *historical audit data*, not the current full
+corrected-continuation campaign. Do not use them for new manuscript claims.
+The verified full result package should be deposited with the three shard
+environment manifests and the paired ablation outputs before submission.
+
 ## Files
 
 - `experiments/mrbi.py`: solver-aware MRBI implementation with warm-started optimization at each decreasing Gaussian probe scale and an optional final refinement.
@@ -57,7 +83,7 @@ The historical main table selects the best MRBI method by its five-seed **datase
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.
 
-This numerical change requires a new set of QNN results. The historical results above remain available for comparison, but should not be presented as results obtained with the corrected-continuation code.
+The full corrected-continuation campaign is complete. The historical results above remain available only as audit material and must not be presented as corrected-continuation results.
 
 Start with a single resumable job:
 
@@ -74,7 +100,7 @@ python scripts/summarize_continuation.py --require-complete
 
 Each of the 45 jobs has separate raw, summary, configuration and log files under `outputs/continuation_v1/jobs/`. The driver verifies a completed file before skipping it and refuses to mix results from a different implementation, Git commit or package environment. The full run is computationally expensive and is not part of CI.
 
-After completion, `outputs/continuation_v1/main_raw.csv`, `main_qnn_results.csv`, `selected_profiles.csv`, `main_statistics.json`, `environment.json` and `environment.freeze.txt` provide the new result package. Review these results before updating the manuscript's historical tables. The nominal Wilcoxon result for a best-profile upper envelope is not corrected for profile selection.
+The completed Ryzen campaign was run in three shards under `outputs/full_ryzen/`. Their raw CSVs were verified and merged into `outputs/continuation_v1/main_raw.csv` with 4,365 rows. The three shard `environment.json` and `environment.freeze.txt` files retain the exact provenance. The nominal Wilcoxon result for a best-profile upper envelope is not corrected for profile selection.
 
 ## Method background
 
