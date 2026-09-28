@@ -91,6 +91,16 @@ and repeated-final-sigma trajectories on a fixed subset of the *full*
 benchmark's training inputs. It does not retrain the QNN, alter the
 completed full campaign or treat diagnostic samples as confirmatory data.
 
+## Exploratory smoothed-residual numerical pilot
+
+A separate [opt-in homotopy pilot](docs/smoothed_homotopy_pilot.md) compares
+smoothed and plain residual objectives with descending and repeated
+final-sigma schedules. It reuses the full 97-method campaign only for
+provenance, performs **no QNN training**, and never changes the
+completed benchmark or its reported results. The four arms have the
+same objective/residual evaluation ceilings but can consume different
+realized budgets; those counts are measured before drawing conclusions.
+
 ## Reproduce the corrected multiscale method
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.

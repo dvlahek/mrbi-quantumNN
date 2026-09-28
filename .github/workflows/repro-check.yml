@@ -45,6 +45,9 @@ jobs:
       - name: Verify stage-level audit is non-intrusive
         run: python scripts/test_multiscale_stage_audit.py
 
+      - name: Verify smoothed-residual homotopy is opt-in and budget-capped
+        run: python scripts/test_smoothed_homotopy.py
+
       - name: Check manuscript summary consistency
         run: python scripts/check_consistency.py
 
