@@ -19,6 +19,7 @@ import main_qnn_benchmark as bench
 
 PLAN = "final_sigma_repeated_vs_continuation_v1"
 SOURCE_PLAN = "core_fixed_after_pilot_v1"
+FULL_SOURCE_PLAN = "full_corrected_continuation_v1"
 METHOD = "final_sigma_repeated_full_balanced_qnn"
 SOURCE_METHOD = "forced_full_balanced_qnn"
 DATASETS = (
@@ -32,15 +33,27 @@ def get_reference(path: Path, dataset: str, seed: int):
     source = pd.read_csv(path)
     required = {
         "dataset", "seed", "method", "balanced_accuracy", "implementation_version",
-        "campaign_design", "n_qubits", "latent_dim", "spectral_radius",
+        "n_qubits", "latent_dim", "spectral_radius",
         "input_scale", "max_samples_per_class",
     }
     if not required.issubset(source.columns):
         raise ValueError(f"Reference raw missing columns: {required - set(source.columns)}")
     if not source["implementation_version"].eq(bench.IMPLEMENTATION_VERSION).all():
         raise ValueError("Reference has another implementation version")
-    if not source["campaign_design"].eq(SOURCE_PLAN).all():
-        raise ValueError("Reference raw is not the fixed core campaign")
+    if "campaign_design" in source.columns:
+        if not source["campaign_design"].eq(SOURCE_PLAN).all():
+            raise ValueError("Reference has an unexpected campaign design")
+        source_plan, expected_methods = SOURCE_PLAN, 25
+    else:
+        source_plan, expected_methods = FULL_SOURCE_PLAN, 97
+    job_rows = source[
+        (source["dataset"] == dataset) & (source["seed"] == seed)
+    ]
+    if len(job_rows) != expected_methods or job_rows["method"].nunique() != expected_methods:
+        raise ValueError(
+            f"Reference {source_plan} does not have {expected_methods} distinct "
+            f"methods for {dataset} seed={seed}"
+        )
     ref = source[
         (source["dataset"] == dataset) & (source["seed"] == seed)
         & (source["method"] == SOURCE_METHOD)
@@ -59,11 +72,11 @@ def get_reference(path: Path, dataset: str, seed: int):
         raise ValueError("Reference profile is not full_balanced")
     if "readout" in ref and str(row["readout"]) != "qnn":
         raise ValueError("Reference is not the QNN readout")
-    return row
+    return row, source_plan
 
 
 def experiment(dataset: str, seed: int, reference_raw: Path):
-    get_reference(reference_raw, dataset, seed)
+    _reference_row, source_plan = get_reference(reference_raw, dataset, seed)
     base = bench.ExperimentConfig(
         seed=seed, n_qubits=4, pca_dim=4, latent_dim=16,
         max_samples_per_class=80, spectral_radius=2.0, input_scale=1.1,
@@ -113,6 +126,7 @@ def experiment(dataset: str, seed: int, reference_raw: Path):
     result["ablation_design"] = PLAN
     result["ablation_arm"] = "final_sigma_repeated"
     result["reference_method"] = SOURCE_METHOD
+    result["source_campaign_design"] = source_plan
     result["stage_sigma_schedule"] = json.dumps([float(s) for s in cfg.sigmas])
     result["objective_sigma_schedule"] = json.dumps([float(cfg.sigmas[-1])] * len(cfg.sigmas))
     result["iteration_budget_per_stage"] = cfg.maxiter_per_scale
@@ -120,7 +134,7 @@ def experiment(dataset: str, seed: int, reference_raw: Path):
     config = {
         "ablation_design": PLAN,
         "implementation_version": bench.IMPLEMENTATION_VERSION,
-        "source_campaign_design": SOURCE_PLAN,
+        "source_campaign_design": source_plan,
         "dataset": dataset,
         "seed": seed,
         "reference_method": SOURCE_METHOD,

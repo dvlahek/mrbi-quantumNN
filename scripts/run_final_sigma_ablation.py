@@ -27,6 +27,7 @@ DATASETS = (
 SEEDS = (0, 1, 2, 3, 4)
 PLAN = "final_sigma_repeated_vs_continuation_v1"
 SOURCE_PLAN = "core_fixed_after_pilot_v1"
+FULL_SOURCE_PLAN = "full_corrected_continuation_v1"
 VERSION = "mrbi_continuation_v1"
 SOURCE_METHOD = "forced_full_balanced_qnn"
 CONTROL_METHOD = "final_sigma_repeated_full_balanced_qnn"
@@ -35,7 +36,8 @@ CONTROL_METHOD = "final_sigma_repeated_full_balanced_qnn"
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reference-raw", required=True, type=Path)
-    parser.add_argument("--reference-env", type=Path, default=None)
+    parser.add_argument("--reference-env", type=Path, nargs="+", default=None,
+                        help="Core environment JSON, or all three full-campaign shard environments.")
     parser.add_argument("--datasets", nargs="+", choices=DATASETS,
                         default=list(DATASETS))
     parser.add_argument("--seeds", nargs="+", type=int, default=list(SEEDS))
@@ -84,15 +86,33 @@ def valid_job(path, dataset, seed):
 
 
 def source_reference(path, jobs):
+    """Validate the complete reference for the requested paired jobs."""
     if not path.is_file():
         raise SystemExit(f"Reference raw not found: {path}")
     df = pd.read_csv(path)
-    required = {"dataset", "seed", "method", "campaign_design",
+    required = {"dataset", "seed", "method", "readout",
                 "implementation_version", "balanced_accuracy"}
     if not required.issubset(df.columns):
         raise SystemExit(f"Reference missing columns: {sorted(required-set(df.columns))}")
-    if not df["campaign_design"].eq(SOURCE_PLAN).all() or not df["implementation_version"].eq(VERSION).all():
-        raise SystemExit("Reference must be the completed corrected-continuation core campaign.")
+    if not df["implementation_version"].eq(VERSION).all():
+        raise SystemExit("Reference must use the corrected-continuation implementation.")
+    if "campaign_design" in df.columns:
+        if not df["campaign_design"].eq(SOURCE_PLAN).all():
+            raise SystemExit("Unexpected reference campaign design.")
+        source_plan, expected_methods, expected_qnn = SOURCE_PLAN, 25, 8
+    else:
+        source_plan, expected_methods, expected_qnn = FULL_SOURCE_PLAN, 97, 32
+    if df.duplicated(["dataset", "seed", "method"]).any():
+        raise SystemExit("Duplicate dataset/seed/method in reference.")
+    for ds, seed in jobs:
+        group = df[(df["dataset"] == ds) & (df["seed"] == seed)]
+        if (len(group) != expected_methods or
+                group["method"].nunique() != expected_methods or
+                group["readout"].eq("qnn").sum() != expected_qnn):
+            raise SystemExit(
+                f"Incomplete {source_plan} reference for {ds} seed={seed}: "
+                f"expected {expected_methods} methods, {expected_qnn} QNN rows."
+            )
     ref = df[df["method"] == SOURCE_METHOD]
     if ref.duplicated(["dataset", "seed"]).any():
         raise SystemExit("Duplicate forced-full-balanced reference rows")
@@ -100,9 +120,9 @@ def source_reference(path, jobs):
     absent = set(jobs) - present
     if absent:
         raise SystemExit(f"Missing reference dataset/seed jobs: {sorted(absent)}")
-    if ref["balanced_accuracy"].isna().any():
+    if pd.to_numeric(ref["balanced_accuracy"], errors="coerce").isna().any():
         raise SystemExit("Reference has missing QNN accuracy")
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashlib.sha256(path.read_bytes()).hexdigest(), source_plan
 
 
 def snapshot():
@@ -135,20 +155,62 @@ def main():
     out = opts.out_dir.resolve()
     ref_path = opts.reference_raw.resolve()
     jobs = [(ds, seed) for ds in opts.datasets for seed in opts.seeds]
-    reference_sha = source_reference(ref_path, jobs)
-    env_path = (opts.reference_env or ref_path.with_name("environment.json")).resolve()
-    if not env_path.is_file():
-        raise SystemExit(f"Reference environment missing: {env_path}")
-    reference_env = json.loads(env_path.read_text(encoding="utf-8"))
-    if (reference_env.get("implementation_version") != VERSION
-            or reference_env.get("campaign_design") != SOURCE_PLAN):
-        raise SystemExit("The reference environment is not the core continuation campaign")
+    reference_sha, source_plan = source_reference(ref_path, jobs)
+    env_paths = [
+        path.resolve() for path in (
+            opts.reference_env or [ref_path.with_name("environment.json")]
+        )
+    ]
+    if len(set(env_paths)) != len(env_paths):
+        raise SystemExit("Duplicate source environment paths.")
+    for path in env_paths:
+        if not path.is_file():
+            raise SystemExit(f"Reference environment missing: {path}")
+    reference_envs = [
+        json.loads(path.read_text(encoding="utf-8")) for path in env_paths
+    ]
+    for reference_env in reference_envs:
+        if reference_env.get("implementation_version") != VERSION:
+            raise SystemExit("Reference environment implementation version differs.")
+        if source_plan == SOURCE_PLAN:
+            if reference_env.get("campaign_design") != SOURCE_PLAN:
+                raise SystemExit("Expected the core campaign environment.")
+        elif reference_env.get("campaign_design") not in (None, FULL_SOURCE_PLAN):
+            raise SystemExit("Expected the full corrected-continuation campaign environment.")
+
+    source_commits = {item.get("git_commit") for item in reference_envs}
+    if len(source_commits) != 1 or not next(iter(source_commits)):
+        raise SystemExit("Reference shards have different or missing Git commits.")
+    source_packages = reference_envs[0].get("packages")
+    if not source_packages or any(
+        item.get("packages") != source_packages for item in reference_envs
+    ):
+        raise SystemExit("Reference shards use different or missing package versions.")
+    if source_plan == FULL_SOURCE_PLAN:
+        # A merged full raw CSV does not have a combined environment file.
+        # Require the provenance JSON of every shard covering requested jobs.
+        source_jobs = set()
+        for item in reference_envs:
+            shard_datasets, shard_seeds = item.get("datasets"), item.get("seeds")
+            if not shard_datasets or not shard_seeds:
+                raise SystemExit("Full reference shard lacks its dataset/seed manifest.")
+            shard_jobs = {(ds, int(seed)) for ds in shard_datasets for seed in shard_seeds}
+            if source_jobs & shard_jobs:
+                raise SystemExit("Overlapping full-campaign source shard manifests.")
+            source_jobs.update(shard_jobs)
+        if not set(jobs).issubset(source_jobs):
+            raise SystemExit("Missing source shard environment for a requested job.")
+
     env = snapshot()
-    if env["packages"] != reference_env.get("packages"):
-        raise SystemExit("Package versions differ from the core reference. Use its original .venv.")
+    if env["packages"] != source_packages:
+        raise SystemExit(
+            "Package versions differ from the reference. "
+            "Activate the venv that produced the full campaign."
+        )
+    env["source_campaign_design"] = source_plan
     env["source_raw_sha256"] = reference_sha
-    env["source_git_commit"] = reference_env.get("git_commit")
-    env["source_environment"] = str(env_path)
+    env["source_git_commit"] = next(iter(source_commits))
+    env["source_environments"] = [str(path) for path in env_paths]
     env["reference_raw"] = str(ref_path)
     env["datasets"], env["seeds"] = opts.datasets, opts.seeds
 
@@ -173,7 +235,8 @@ def main():
     if manifest.exists():
         old = json.loads(manifest.read_text(encoding="utf-8"))
         for key in ("ablation_design", "implementation_version", "git_commit",
-                    "packages", "source_raw_sha256", "source_git_commit"):
+                    "packages", "source_raw_sha256", "source_git_commit",
+                    "source_campaign_design", "source_environments"):
             if old.get(key) != env.get(key):
                 raise SystemExit(f"Campaign environment changed: {key}; use another output directory.")
     else:

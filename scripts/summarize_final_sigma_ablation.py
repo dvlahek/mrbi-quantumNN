@@ -21,6 +21,7 @@ DATASETS = (
 SEEDS = {0, 1, 2, 3, 4}
 PLAN = "final_sigma_repeated_vs_continuation_v1"
 SOURCE_PLAN = "core_fixed_after_pilot_v1"
+FULL_SOURCE_PLAN = "full_corrected_continuation_v1"
 VERSION = "mrbi_continuation_v1"
 SOURCE_METHOD = "forced_full_balanced_qnn"
 CONTROL_METHOD = "final_sigma_repeated_full_balanced_qnn"
@@ -43,16 +44,21 @@ def analyse(control_raw: Path, reference_raw: Path, out_dir: Path, require_compl
         raise SystemExit("Missing solver or computation-budget metrics in one of the raw CSVs")
     if not {"ablation_design", "ablation_arm"}.issubset(control.columns):
         raise SystemExit("The final-sigma raw CSV lacks the ablation labels")
-    if "campaign_design" not in source.columns:
-        raise SystemExit("The reference raw CSV lacks the core-campaign label")
+    if "campaign_design" in source.columns:
+        if not source["campaign_design"].eq(SOURCE_PLAN).all():
+            raise SystemExit("Unexpected core reference campaign design")
+        source_plan = SOURCE_PLAN
+    else:
+        source_plan = FULL_SOURCE_PLAN
     if (not control["implementation_version"].eq(VERSION).all()
             or not control["ablation_design"].eq(PLAN).all()
             or not control["ablation_arm"].eq("final_sigma_repeated").all()
             or not control["method"].eq(CONTROL_METHOD).all()):
         raise SystemExit("Control CSV is not the fixed final-sigma ablation")
-    if (not source["implementation_version"].eq(VERSION).all()
-            or not source["campaign_design"].eq(SOURCE_PLAN).all()):
-        raise SystemExit("Reference is not the corrected-continuation fixed core campaign")
+    if not source["implementation_version"].eq(VERSION).all():
+        raise SystemExit("Reference is not the corrected continuation implementation")
+    if "source_campaign_design" in control.columns and not control["source_campaign_design"].eq(source_plan).all():
+        raise SystemExit("Control reference label does not match supplied reference")
     if control.duplicated(["dataset", "seed"]).any():
         raise SystemExit("Duplicate dataset/seed in final-sigma controls")
     reference = source[source["method"].eq(SOURCE_METHOD)].copy()
@@ -118,7 +124,7 @@ def analyse(control_raw: Path, reference_raw: Path, out_dir: Path, require_compl
         p = float(wilcoxon(differences, alternative="two-sided", zero_method="wilcox").pvalue)
     stat = {
         "ablation_design": PLAN,
-        "source_campaign_design": SOURCE_PLAN,
+        "source_campaign_design": source_plan,
         "profile": "forced_full_balanced_qnn",
         "n_complete_datasets": len(complete),
         "complete_datasets": complete,
