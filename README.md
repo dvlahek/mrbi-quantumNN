@@ -83,6 +83,14 @@ is +0.0023, with an exploratory two-sided Wilcoxon p=0.5703. The continuation
 arm makes more objective calls. This does not establish an independent
 advantage of descending-scale optimization for this fixed profile.
 
+## Stage-level multiscale diagnosis
+
+A [label-free, stage-level audit](docs/multiscale_stage_audit.md) on branch
+`experiment/multiscale-stage-audit-20260928` compares matched continuation
+and repeated-final-sigma trajectories on a fixed subset of the *full*
+benchmark's training inputs. It does not retrain the QNN, alter the
+completed full campaign or treat diagnostic samples as confirmatory data.
+
 ## Reproduce the corrected multiscale method
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.
