@@ -76,6 +76,20 @@ Each of the 45 jobs has separate raw, summary, configuration and log files under
 
 After completion, `outputs/continuation_v1/main_raw.csv`, `main_qnn_results.csv`, `selected_profiles.csv`, `main_statistics.json`, `environment.json` and `environment.freeze.txt` provide the new result package. Review these results before updating the manuscript's historical tables. The nominal Wilcoxon result for a best-profile upper envelope is not corrected for profile selection.
 
+## 12-process full corrected-continuation campaign
+
+A separate [parallel full-campaign guide](docs/full_parallel_campaign.md)
+runs the **unchanged** 97-method main QNN benchmark for all nine tasks and
+five seeds with up to 12 independent single-threaded processes. Each
+dataset/seed job produces its own raw CSV, summary, configuration and log,
+and the driver resumes valid jobs without rerunning them. This is the same
+corrected-continuation experiment as the serial driver, not a reduced
+method search; old result directories are not overwritten. The runner
+records Git/package provenance and can summarize complete five-seed tasks.
+
+`experiment/full-parallel-12core-20260928` is isolated from the completed
+eight-QNN core campaign and from `main`.
+
 ## Method background
 
 The Gaussian–wavelet zero-localization principle is developed in Vlahek, D., *A hybrid gaussian–wavelet multiscale algorithm for zero localization in oscillatory functions*, Numerical Algorithms (2026), https://doi.org/10.1007/s11075-026-02484-8. This study adapts its numerical motivation to vector-valued implicit equilibrium features before a simulated QNN readout.

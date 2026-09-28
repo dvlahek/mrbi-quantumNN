@@ -39,6 +39,11 @@ jobs:
       - name: Verify resumable campaign arguments
         run: python scripts/run_continuation_campaign.py --dry-run --datasets breast_cancer --seeds 0
 
+      - name: Verify 12-process full-continuation campaign
+        run: |
+          python scripts/test_parallel_continuation.py
+          python scripts/run_parallel_continuation_campaign.py --dry-run --workers 12 --datasets breast_cancer --seeds 0
+
       - name: Check manuscript summary consistency
         run: python scripts/check_consistency.py
 
