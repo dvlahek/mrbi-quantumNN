@@ -193,6 +193,7 @@ def main():
                 "use a new --out-dir."
             )
     else:
+        path.parent.mkdir(parents=True,exist_ok=True)
         proto.single.atomic_write(path,raw)
     print(f"SYNTHETIC_PILOT_OK {path}",flush=True)
 
