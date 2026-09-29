@@ -306,7 +306,7 @@ def run():
                     )
                     counts["strict_roots"]+=sum(int(r.strict_root_success) for r in records)
                     counts["eligible_roots"]+=int(eligible.sum().item())
-                    counts["mrbi_attempts"]+=sum(int(not r.zero_success) for r in records) if mode in ("mrbi","mrbi_cap") else 0
+                    counts["mrbi_attempts"]+=sum(int(not r.zero_success) for r in records) if mode in ("mrbi","mrbi_cap","mrbi_adaptive") else 0
                     counts["mrbi_rescues"]+=sum(int(r.checkpoint_success) for r in records)
                     rescued_training_positions.extend(ids[j] for j,r in enumerate(records) if r.checkpoint_success)
                     logits=model(xb,z,eligible)
