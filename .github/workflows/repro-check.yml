@@ -83,6 +83,9 @@ jobs:
           python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
           python -m pip install pennylane
 
+      - name: Validate trainable-angle development pilot CLI without loading data
+        run: python scripts/run_trainable_implicit_angle_development.py --dry-run
+
       - name: Verify implicit-function gradients, root gating and exact PCA-QNN identity
         run: python scripts/test_trainable_implicit_angle.py
 
