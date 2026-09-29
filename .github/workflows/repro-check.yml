@@ -72,6 +72,12 @@ jobs:
       - name: Check frozen fresh-seed fusion plan without evaluating outcomes
         run: python scripts/run_implicit_fusion_qnn.py --dry-run
 
+      - name: Validate independent-source CSV schemas, SHA contracts, and QNN controls on synthetic data
+        run: python scripts/test_external_fusion_qnn.py
+
+      - name: Check locked external QNN study plan without downloading data
+        run: python scripts/run_external_fusion_qnn.py --dry-run
+
       - name: Check manuscript summary consistency
         run: python scripts/check_consistency.py
 

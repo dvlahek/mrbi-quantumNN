@@ -157,6 +157,20 @@ the paired certified-minus-zero fusion BA difference is the
 prespecified primary endpoint. Existing numerical and QNN
 results remain unchanged.
 
+## Final external-source fusion QNN controls
+
+The [frozen UCI external-source validation plan](docs/external_fusion_qnn.md)
+tests the same PCA+certified-MRBI+QNN mechanism on three
+source datasets not derived from earlier breast-cancer,
+digits or wine tasks (Banknote Authentication, Ionosphere,
+Sonar), with seeds 25–29 and **six** prespecified QNN arms.
+Controls include equal-width 16-zero padding and a
+label-blind derangement of certified latent states.
+The three source URLs, raw SHA-256 manifest and
+dataset-shape validation are enforced before any job.
+The original fusion experiment and its outcomes
+remain unchanged. All QNNs are classically simulated.
+
 ## Reproduce the corrected multiscale method
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.

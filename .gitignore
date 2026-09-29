@@ -16,3 +16,6 @@ multistart_sanity_summary.csv
 article_qnn_continuation_v1_raw.csv
 article_qnn_continuation_v1_summary.csv
 article_qnn_continuation_v1_config.json
+
+# Downloaded UCI sources and their frozen local SHA manifest
+/data/external_fusion/
