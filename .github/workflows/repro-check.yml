@@ -54,6 +54,12 @@ jobs:
       - name: Verify frozen fresh-seed single-stage experiment without inspecting held-out outcomes
         run: python scripts/test_heldout_single_stage.py
 
+      - name: Check frozen QNN readout/feature wiring on synthetic data only
+        run: python scripts/test_frozen_single_stage_qnn.py
+
+      - name: Confirm frozen new-seed QNN campaign plan without executing it
+        run: python scripts/run_frozen_single_stage_qnn.py --dry-run
+
       - name: Check manuscript summary consistency
         run: python scripts/check_consistency.py
 

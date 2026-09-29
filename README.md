@@ -122,6 +122,17 @@ does **not** train QNN or change the completed full-campaign data.
 All methods' actual F/J and optimization costs are recorded; identical
 limits do not imply equal realized work.
 
+## Fixed one-stage QNN experiment (new seeds)
+
+The [frozen single-stage QNN comparison](docs/frozen_single_stage_qnn.md)
+uses seeds 10–14 and four prespecified methods: PCA-QNN, Zero-QNN,
+one-stage smoothed-coarse MRBI-QNN and a matched smoothed-fine
+MRBI-QNN control. The experiment measures paired balanced accuracy,
+strict root success and observed F/J cost, with no per-dataset
+profile selection. All QNN circuits run on a classical simulator.
+It is a separate branch and does not replace the completed full
+97-method campaign or the previous numerical development results.
+
 ## Reproduce the corrected multiscale method
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.

@@ -88,14 +88,14 @@ def measured_root(F, J, count, x, z, root_cfg):
 
 def run_arm(layer, x, cfg, root_cfg, zero, zero_smin, baseline,
             zero_root_f, zero_root_j, base_wall_sec, seed, index,
-            arm, objective_cap, residual_cap):
+            arm, objective_cap, residual_cap, *, return_solution=False):
     """One stage and root, or zero-only if zero has already succeeded."""
     if arm not in ARMS:
         raise ValueError("Unknown arm")
     sigma, weight = ARM_SPECS[arm]
     base_f, base_j = baseline["F"], baseline["J"]
     if zero.success:
-        return None, {
+        result = {
             "zero_success": 1, "candidate_attempted": 0,
             "checkpoint_success": 0, "accepted_success": 1,
             "used_mrbi": 0, "zero_residual": float(zero.residual),
@@ -113,6 +113,7 @@ def run_arm(layer, x, cfg, root_cfg, zero, zero_smin, baseline,
             "budget_hit": 0, "total_wall_sec": float(base_wall_sec),
             "probe_sha256": "",
         }
+        return (None, result, np.asarray(zero.z_star).copy()) if return_solution else (None, result)
 
     start = time.perf_counter()
     F, J, count = counted_functions(layer)
@@ -194,7 +195,7 @@ def run_arm(layer, x, cfg, root_cfg, zero, zero_smin, baseline,
         stage_root_F_calls=int(checkpoint_f),
         stage_root_J_calls=int(checkpoint_j),
     )
-    return stage, record
+    return (stage, record, np.asarray(accepted.z_star).copy()) if return_solution else (stage, record)
 
 
 def run_job(dataset, seed, n, objective_cap, residual_cap):
