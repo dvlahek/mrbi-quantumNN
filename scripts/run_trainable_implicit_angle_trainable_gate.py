@@ -125,7 +125,7 @@ def run():
     models={
         "pca":bench.TorchQNN(4,4,2,MODEL_SEED),
         "zero":GatedImplicitAngleQNN(layer,cfg,MODEL_SEED),
-        "mrbi":proto.TrainableImplicitAngleQNN(layer,cfg,MODEL_SEED),
+        "mrbi":GatedImplicitAngleQNN(layer,cfg,MODEL_SEED),
     }
     for name,parameter in models["zero"].state_dict().items():
         if not torch.equal(parameter,models["mrbi"].state_dict()[name]):
