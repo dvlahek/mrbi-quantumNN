@@ -171,6 +171,19 @@ dataset-shape validation are enforced before any job.
 The original fusion experiment and its outcomes
 remain unchanged. All QNNs are classically simulated.
 
+## Trainable implicit equilibrium with certified QNN-angle correction (prototype)
+
+The [trainable-implicit-angle prototype](docs/trainable_implicit_angle_prototype.md)
+keeps the original four-qubit PCA-QNN intact at zero correction,
+adds a learned root-conditioned angle and trains the original
+implicit W/U/b by implicit-function differentiation on strict,
+locally nonsingular roots. Matched zero-start and frozen
+coarse-MRBI arms differ only by candidate initialization.
+Synthetic finite-difference and QNN identity tests precede
+any real benchmark; the two-step synthetic pilot is not a
+classification result. Previous positive and negative
+fusion campaigns remain unchanged.
+
 ## Reproduce the corrected multiscale method
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.
