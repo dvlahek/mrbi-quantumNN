@@ -133,6 +133,16 @@ profile selection. All QNN circuits run on a classical simulator.
 It is a separate branch and does not replace the completed full
 97-method campaign or the previous numerical development results.
 
+## Frozen solver-certificate gate for QNN features
+
+The [certificate-gated single-stage QNN experiment](docs/certified_gate_qnn.md)
+tests a strict root-success acceptance policy after the completed
+seeds-10–14 study found that most selected MRBI feature replacements
+still failed the original root criterion. It uses **new seeds 15–19**
+and reports both the ungated and certified versions against Zero-QNN
+and PCA-QNN. This is a new, prespecified follow-up, not a replacement
+for existing negative or positive results. No quantum advantage claim.
+
 ## Reproduce the corrected multiscale method
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.

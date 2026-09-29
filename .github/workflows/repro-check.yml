@@ -60,6 +60,12 @@ jobs:
       - name: Confirm frozen new-seed QNN campaign plan without executing it
         run: python scripts/run_frozen_single_stage_qnn.py --dry-run
 
+      - name: Verify strict solver certification of QNN features on synthetic data
+        run: python scripts/test_certified_gate_qnn.py
+
+      - name: Verify frozen certified QNN seed plan without looking at outcomes
+        run: python scripts/run_certified_gate_qnn.py --dry-run
+
       - name: Check manuscript summary consistency
         run: python scripts/check_consistency.py
 
