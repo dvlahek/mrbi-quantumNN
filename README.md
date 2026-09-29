@@ -143,6 +143,20 @@ and reports both the ungated and certified versions against Zero-QNN
 and PCA-QNN. This is a new, prespecified follow-up, not a replacement
 for existing negative or positive results. No quantum advantage claim.
 
+## PCA-plus-implicit MRBI fusion QNN (fresh seeds)
+
+The [frozen PCA–MRBI fusion experiment](docs/implicit_fusion_qnn.md)
+uses **seeds 20–24** to test the representation-level scientific
+question: can MRBI-selected implicit features add discriminative
+information to a classically simulated QNN that retains the
+original PCA features? Three 20D fusion methods compare zero,
+ungated smoothed-coarse MRBI and strictly certified coarse MRBI
+states against the descriptive original 4D PCA-QNN baseline.
+QNN architecture, data splits and training seeds are fixed;
+the paired certified-minus-zero fusion BA difference is the
+prespecified primary endpoint. Existing numerical and QNN
+results remain unchanged.
+
 ## Reproduce the corrected multiscale method
 
 The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.
