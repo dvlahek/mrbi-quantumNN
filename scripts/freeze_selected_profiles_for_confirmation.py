@@ -107,13 +107,17 @@ def selected_mapping(data:pd.DataFrame):
         if candidates.empty:
             raise SystemExit(f"{dataset}: no MRBI QNN candidates")
 
-        # Deterministic tie handling: max BA then lexicographically smallest method.
-        best_score=float(candidates.max())
+        # Match the already documented development selection exactly:
+        # pandas Series.idxmax() on the grouped five-seed means.  Do not
+        # manufacture a tolerance-based tie because near-equal floating-point
+        # values can round identically in CSV output without being exact ties.
+        best_method=str(candidates.idxmax())
+        best_score=float(candidates.loc[best_method])
+        exact_max=float(candidates.max())
         tied=sorted(
-            method for method,value in candidates.items()
-            if abs(float(value)-best_score)<=1e-15
+            str(method) for method,value in candidates.items()
+            if float(value)==exact_max
         )
-        best_method=tied[0]
         zero=float(scores["implicit_zero_qnn"])
         pca=float(scores["pca_qnn"])
         rows.append({
@@ -189,7 +193,7 @@ def main():
             "metric":"mean balanced_accuracy across development seeds",
             "candidate_surface":"QNN MRBI methods excluding pca_qnn and implicit_zero_qnn",
             "per_dataset":True,
-            "tie_break":"lexicographically smallest method among exact maxima",
+            "tie_break":"pandas Series.idxmax() on grouped five-seed means, matching summarize_continuation.py",
         },
         "selected_profiles":rows,
         "confirmation_plan":{
