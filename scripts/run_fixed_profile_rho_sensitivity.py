@@ -60,6 +60,19 @@ def _metric_close(a,b,tol=ANCHOR_TOL):
     return bool(np.isclose(a,b,atol=tol,rtol=0.0))
 
 
+def json_safe(value):
+    """Convert non-finite diagnostics to JSON null without changing results."""
+    if isinstance(value,dict):
+        return {k:json_safe(v) for k,v in value.items()}
+    if isinstance(value,(list,tuple)):
+        return [json_safe(v) for v in value]
+    if isinstance(value,np.generic):
+        value=value.item()
+    if isinstance(value,float) and not np.isfinite(value):
+        return None
+    return value
+
+
 def load_confirmation_reference(base,seed,dataset):
     path=base/f"seed{seed}"/"locked_result.json"
     if not path.exists():
@@ -290,13 +303,13 @@ def main():
         rows.append(result)
         confirm.atomic_write(
             checkpoint,
-            json.dumps({
+            json.dumps(json_safe({
                 "plan":PLAN,
                 "git_commit":commit,
                 "seed":args.seed,
                 "rho":rho,
                 "dataset_results":rows,
-            },indent=2,allow_nan=False)+"\n",
+            }),indent=2,allow_nan=False)+"\n",
         )
         print(
             f"RHO_DONE dataset={dataset} "
@@ -324,7 +337,7 @@ def main():
     }
     path=out_dir/"result.json"
     confirm.atomic_write(
-        path,json.dumps(payload,indent=2,allow_nan=False)+"\n"
+        path,json.dumps(json_safe(payload),indent=2,allow_nan=False)+"\n"
     )
     print(f"FIXED_PROFILE_RHO_OK {path}",flush=True)
 
