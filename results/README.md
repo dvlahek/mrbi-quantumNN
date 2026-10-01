@@ -1,6 +1,6 @@
-# Final manuscript results
+# Reproducibility results
 
-This directory contains the aggregate results used in the final manuscript.
+This directory contains the aggregate results produced by the final reproducibility protocol.
 
 - `final/confirmation_summary.json` — dataset-level and overall confirmation statistics.
 - `final/confirmation_dataset_summary.csv` — one row per dataset, averaged over confirmation seeds 40–49.
