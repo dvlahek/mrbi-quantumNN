@@ -37,12 +37,12 @@ Across the nine dataset-level means:
 - random-5 multistart QNN: **0.9137**
 - selected MRBI − Zero: **+0.00835**
 - positive / neutral / negative datasets versus Zero: **6 / 1 / 2**
-- one-sided Wilcoxon selected MRBI > Zero: **p = 0.1016**
+- one-sided exact signed-rank test selected MRBI > Zero: **p = 0.1016**
 - selected MRBI − random-5 multistart: **+0.01611**
-- one-sided Wilcoxon selected MRBI > random-5 multistart: **p = 0.0195**
+- one-sided exact signed-rank test selected MRBI > random-5 multistart: **p = 0.0234**
 - solver success: Zero **0.7161**, selected MRBI **0.7364**
 
-The primary MRBI-versus-Zero result is therefore a positive prospective effect, but not a statistically significant superiority claim at the nine-dataset level. Runtime is recorded in the result files as a secondary implementation characteristic and is not the main contribution of the study.
+The primary MRBI-versus-Zero result is therefore a positive prospective effect, but not a statistically significant superiority claim at the nine-dataset level. Signed-rank tests treat |Δ| ≤ 1e-12 as numerical zero. Runtime is recorded in the result files as a secondary implementation characteristic and is not the main contribution of the study.
 
 Canonical aggregate results are under `results/final/`.
 
