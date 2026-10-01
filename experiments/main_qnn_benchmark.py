@@ -1,35 +1,21 @@
 """
-main_qnn_benchmark.py
+Benchmark MRBI-based implicit representations with simulated QNN readouts.
 
-Hard-regime benchmark for MRBI-hybrid implicit representations and simulated QNN readouts.
-
-Purpose
--------
-The earlier quick benchmark showed that hybrid MRBI rarely activates because the
-zero-initialized root solver already solves the equilibrium almost perfectly.
-That is good practical behavior, but weak for a paper because it does not test
-MRBI under hard/non-contractive regimes.
-
-This script fixes that experimentally without modifying mrbi.py.
+The zero-initialized solver is often sufficient in easier regimes. This
+benchmark therefore includes non-contractive settings in which initialization
+has a measurable effect on root finding.
 
 It evaluates:
     1) PCA + classical/QNN readouts
-    2) implicit_zero + readouts
-    3) mrbi_hybrid + readouts
-    4) mrbi_forced + readouts
-    5) mrbi_hybrid_aggressive + readouts
+    2) zero-initialized implicit features
+    3) hybrid MRBI features
+    4) forced MRBI features
+    5) more aggressive hybrid trigger settings
     6) MRBI ablations: full, no_detector, residual_only
 
-Key changes:
-    - Adds forced MRBI mode: always constructs MRBI candidate and solves from it.
-    - Adds aggressive hybrid profiles: lower conditioning threshold, stronger trigger.
-    - Adds genuinely harder implicit regimes:
-          spectral_radius up to 2.25,
-          stronger input_scale,
-          larger latent_dim,
-          optional ill-conditioned W construction.
-    - Saves raw and summary CSV.
-    - Keeps QNN optional because it is slow on classical simulation.
+The benchmark supports several implicit-layer difficulties and writes raw and
+summary CSV files. QNN evaluation is optional because all circuits are simulated
+classically.
 
 Install:
     pip install numpy scipy scikit-learn pandas torch pennylane
@@ -40,14 +26,14 @@ Requirement:
 Fast hard test:
     python main_qnn_benchmark.py --mode hard_quick --no-qnn
 
-Article-style hard test:
+Full hard test:
     python main_qnn_benchmark.py --mode hard_article --no-qnn --seeds 0 1 2 3 4
 
-With QNN, smaller:
+Smaller QNN run:
     python main_qnn_benchmark.py --mode hard_quick --seeds 0 1 --qubits 4 6
 
-Scientific warning:
-    This still does not prove quantum advantage. QNNs are simulated on a classical computer.
+All QNN results are classical simulations; no quantum-hardware or
+quantum-advantage claim is made here.
 """
 
 from __future__ import annotations
@@ -297,8 +283,8 @@ def get_hybrid_profiles(mode: str) -> List[HybridProfile]:
     aggressive:
         Triggers more often using conditioning and relative residual.
     always_trigger:
-        Hybrid wrapper is forced to run MRBI, but still uses original acceptance.
-        This tests whether candidate construction is useful even when zero solve succeeds.
+        Runs MRBI for every sample but keeps the same acceptance rule.
+        This isolates the effect of the MRBI candidate when Zero also succeeds.
     """
     profiles = [
         HybridProfile(
@@ -862,8 +848,8 @@ def solve_forced_mrbi_features(X, layer, cfg: ExperimentConfig, seed: int):
         - otherwise zero result
     if forced_accept_if_better_residual=True.
 
-    This is not intended as the conservative production policy. It is an
-    experimental ablation to prove whether MRBI candidates are useful at all.
+    This mode is used as an ablation of MRBI candidate construction. The hybrid
+    trigger remains the default policy for normal benchmark comparisons.
     """
     F, J = mrbi.make_residual_and_jacobian(layer)
     root_cfg = make_root_cfg(cfg)
