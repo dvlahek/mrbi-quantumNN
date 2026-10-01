@@ -72,11 +72,11 @@
     "development_selected_ba_mean": 0.9577072311111112,
     "confirmation_minus_development_selected_ba_mean": -0.027857142927689618
   },
-  "interpretation_guardrails": [
-    "The dataset-specific method map was fixed from corrected-continuation seeds 0-4 before confirmation seeds 40-49 were run.",
-    "No method, dataset, seed, threshold, or profile is reselected using confirmation results.",
-    "The primary inference uses nine dataset-level paired differences, each averaged over ten confirmation seeds.",
-    "Random-5 multistart and PCA-QNN are secondary references; the primary confirmatory comparison is selected MRBI-QNN versus Zero-QNN.",
-    "The experiment is a new-split confirmation on the same nine benchmark tasks, not external-dataset validation."
+  "interpretation_notes": [
+    "The dataset-specific methods were selected on development seeds 0-4 before confirmation seeds 40-49 were run.",
+    "Confirmation results do not change the selected method, dataset set, seed set, or thresholds.",
+    "The primary analysis uses nine dataset-level paired differences, each averaged over ten confirmation seeds.",
+    "Random-5 multistart and PCA-QNN are secondary references. The primary comparison is selected MRBI-QNN versus Zero-QNN.",
+    "The confirmation uses new splits of the same nine benchmark tasks; it is not external-dataset validation."
   ]
 }
