@@ -1,14 +1,14 @@
 # MRBI-stabilized implicit equilibrium features for simulated QNN readouts
 
-Minimal reproducibility package for the Neural Processing Letters manuscript.
+Code and aggregate results for the Neural Processing Letters manuscript.
 
 ## Scope
 
-This repository contains only the code, frozen configuration, and aggregate results needed to reproduce the manuscript's final MRBI-QNN development and confirmation protocol. Earlier diagnostic work (caps, gates, rescue-only variants, trainable-angle prototypes, homotopy experiments, external-fusion studies, and other follow-up branches) is preserved separately on the archive branch:
+The main branch contains the code, fixed configuration, and aggregate results used for the final MRBI-QNN development and confirmation experiments. Earlier diagnostics (caps, gates, rescue-only variants, trainable-angle prototypes, homotopy experiments, external-fusion studies, and other follow-up branches) are kept on the archive branch:
 
 `archive/pre-npl-final-cleanup-20261001`
 
-The study uses classically simulated quantum neural-network readouts. It does not claim quantum advantage or hardware performance.
+All QNN results are obtained by classical simulation. The study makes no claim about quantum hardware performance or quantum advantage.
 
 ## Final experimental design
 
@@ -18,12 +18,12 @@ The implicit layer is
 z = tanh(W z + U x + b)
 ```
 
-and MRBI constructs solver-aware initializations through corrected descending-scale continuation.
+MRBI builds solver-aware initializations using corrected descending-scale continuation.
 
 The final protocol has two stages.
 
 1. **Development selection** — corrected-continuation campaign on seeds 0–4 across nine binary classification tasks. For each dataset, the MRBI-QNN method with the highest five-seed mean balanced accuracy is selected.
-2. **Frozen confirmation** — the selected dataset-specific methods are frozen in `experiments/selected_profile_confirmation_lock_v1.json` and evaluated without reselection on new seeds 40–49.
+2. **Confirmation** — the dataset-specific methods are fixed in `experiments/selected_profile_confirmation_lock_v1.json` and evaluated on new seeds 40–49 with no reselection.
 
 The primary confirmatory comparison is selected MRBI-QNN versus Zero-QNN. PCA-QNN and random-5 multistart QNN are secondary references.
 
@@ -42,9 +42,9 @@ Across the nine dataset-level means:
 - one-sided exact signed-rank test selected MRBI > random-5 multistart: **p = 0.0234**
 - solver success: Zero **0.7161**, selected MRBI **0.7364**
 
-The primary MRBI-versus-Zero result is therefore a positive prospective effect, but not a statistically significant superiority claim at the nine-dataset level. Signed-rank tests treat |Δ| ≤ 1e-12 as numerical zero. Runtime is recorded in the result files as a secondary implementation characteristic and is not the main contribution of the study.
+MRBI is better than Zero on average in the confirmation experiment, but the nine-dataset signed-rank test is not significant. Signed-rank tests treat |Δ| ≤ 1e-12 as numerical zero. Runtime is reported only as implementation context; it is not the focus of the study.
 
-Canonical aggregate results are under `results/final/`.
+Final aggregate results are under `results/final/`.
 
 ## Install
 
@@ -83,9 +83,9 @@ python scripts/run_continuation_campaign.py
 python scripts/summarize_continuation.py --require-complete
 ```
 
-The campaign writes outputs under `outputs/continuation_v1/`. The frozen lock records the SHA-256 hashes of the development raw table and selected-profile table used for the manuscript confirmation.
+The campaign writes outputs under `outputs/continuation_v1/`. The fixed profile file records the SHA-256 hashes of the development raw table and selected-profile table used for confirmation.
 
-## Reproduce the frozen confirmation
+## Reproduce the confirmation
 
 ```bash
 for seed in {40..49}; do
@@ -99,11 +99,11 @@ Generated outputs are written under `outputs/locked_selected_profile_confirmatio
 
 ## Provenance
 
-The frozen selected-profile map was verified against the complete corrected-continuation development campaign before confirmation was run. The committed final aggregate result records:
+The selected-profile map was checked against the complete corrected-continuation development campaign before the confirmation run. The final aggregate result records:
 
 - development raw SHA-256: `e1a3917be493485156e87e79c921d2a91a54cf715aa55443516059fc3d370cd6`
 - development selected-profile SHA-256: `4cb9ad804076dea25820b73c1640a81e85c7d3b4ad77d16341555269da707908`
 - development seeds: 0–4
 - confirmation seeds: 40–49
 
-The full tracked research/code path before final cleanup remains available on the archive branch above. Local generated `outputs/` directories were not tracked by Git and are therefore not part of that archive branch.
+The pre-cleanup code and tracked research notes remain available on the archive branch above. Locally generated `outputs/` directories were ignored by Git and are not part of that branch.
