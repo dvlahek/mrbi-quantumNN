@@ -1,107 +1,109 @@
-# MRBI implicit features for simulated QNN readouts
+# MRBI-stabilized implicit equilibrium features for simulated QNN readouts
 
-Code and numerical results for *MRBI-Stabilized Implicit Equilibrium Features for Simulated Quantum Neural Network Readouts*, prepared for Neural Processing Letters.
+Minimal reproducibility package for the Neural Processing Letters manuscript.
 
-The study compares representations under a fixed implicit operator and the same compact, classically simulated QNN readout. It does not claim quantum advantage or hardware performance.
+## Scope
 
-## Canonical results: full corrected-continuation campaign
+This repository contains only the code, frozen configuration, and aggregate results needed to reproduce the manuscript's final MRBI-QNN development and confirmation protocol. Earlier diagnostic work (caps, gates, rescue-only variants, trainable-angle prototypes, homotopy experiments, external-fusion studies, and other follow-up branches) is preserved separately on the archive branch:
 
-The relevant QNN benchmark is the completed **full** corrected-continuation
-campaign on the Ryzen workstation: nine tasks, five seeds per task, 97
-readout-method rows per seed (32 QNN variants), totaling 4,365 raw rows.
+`archive/pre-npl-final-cleanup-20261001`
 
-The best-per-task MRBI-QNN upper envelope improves mean balanced accuracy
-relative to Zero-QNN by +0.0211 on eight of nine tasks. This selects the
-highest five-seed profile mean separately on each task; it does **not**
-establish the gain of a single fixed method. The nominal p=0.0039 is
-unadjusted for profile selection. PCA-QNN remains higher on every task.
+The study uses classically simulated quantum neural-network readouts. It does not claim quantum advantage or hardware performance.
 
-The paired `forced_full_balanced_qnn` ablation is maintained on the
-[full-reference final-sigma branch](https://github.com/dvlahek/mrbi-quantumNN/tree/experiment/continuation-final-sigma-ablation-20260928).
-It reports a mean QNN balanced-accuracy difference of +0.0023 for
-continuation minus repeated final-sigma optimization (exploratory two-sided
-p=0.5703), with more objective evaluations for continuation. This does not
-establish a separate advantage from the scale schedule.
+## Final experimental design
 
-**Provenance:** the full raw benchmark and paired control were generated
-locally; the `results/raw/` and `results/summary_tables/` CSVs already
-tracked on this branch are *historical audit data*, not the current full
-corrected-continuation campaign. Do not use them for new manuscript claims.
-The verified full result package should be deposited with the three shard
-environment manifests and the paired ablation outputs before submission.
+The implicit layer is
 
-## Files
+```text
+z = tanh(W z + U x + b)
+```
 
-- `experiments/mrbi.py`: solver-aware MRBI implementation with warm-started optimization at each decreasing Gaussian probe scale and an optional final refinement.
-- `experiments/main_qnn_benchmark.py`: nine-task benchmark, including the fixed QNN architecture, classifier baselines, MRBI profiles and hybrid settings.
-- `experiments/spambase_external.py` and `experiments/run_multistart_sanity_check.py`: supporting experiment entry points.
-- `results/raw/`: the supplied historical per-seed main-benchmark CSVs.
-- `results/summary_tables/article_qnn_final_summary1.csv`: recovered five-dataset summary, including the three tasks not fully represented in the raw CSVs.
-- `results/summary_tables/`: manuscript tables and sensitivity-plot inputs.
-- `results/supporting_raw/`: supplied Spambase and multistart data.
-- `scripts/`: automated verification, figure/table regeneration and the resumable corrected-continuation campaign.
+and MRBI constructs solver-aware initializations through corrected descending-scale continuation.
 
-The complete pre-cleanup repository is preserved in [the archive branch](https://github.com/dvlahek/mrbi-quantumNN/tree/archive/pre-npl-cleanup-20260927).
+The final protocol has two stages.
+
+1. **Development selection** — corrected-continuation campaign on seeds 0–4 across nine binary classification tasks. For each dataset, the MRBI-QNN method with the highest five-seed mean balanced accuracy is selected.
+2. **Frozen confirmation** — the selected dataset-specific methods are frozen in `experiments/selected_profile_confirmation_lock_v1.json` and evaluated without reselection on new seeds 40–49.
+
+The primary confirmatory comparison is selected MRBI-QNN versus Zero-QNN. PCA-QNN and random-5 multistart QNN are secondary references.
+
+## Confirmation result
+
+Across the nine dataset-level means:
+
+- PCA-QNN mean balanced accuracy: **0.9722**
+- Zero-QNN: **0.9215**
+- selected MRBI-QNN: **0.9299**
+- random-5 multistart QNN: **0.9137**
+- selected MRBI − Zero: **+0.00835**
+- positive / neutral / negative datasets versus Zero: **6 / 1 / 2**
+- one-sided Wilcoxon selected MRBI > Zero: **p = 0.1016**
+- selected MRBI − random-5 multistart: **+0.01611**
+- one-sided Wilcoxon selected MRBI > random-5 multistart: **p = 0.0195**
+- solver success: Zero **0.7161**, selected MRBI **0.7364**
+
+The primary MRBI-versus-Zero result is therefore a positive prospective effect, but not a statistically significant superiority claim at the nine-dataset level. Runtime is recorded in the result files as a secondary implementation characteristic and is not the main contribution of the study.
+
+Canonical aggregate results are under `results/final/`.
 
 ## Install
 
-Use Python 3.11 in WSL or another supported Python environment:
+For checks and summaries:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+For the simulated QNN runs:
+
+```bash
 python -m pip install -r requirements-qnn.txt
 ```
 
-The numerical-summary checks only require `requirements.txt`. The full simulated-QNN experiment additionally requires PyTorch and PennyLane. The campaign records the Git commit, Python version, package versions and `pip freeze` in its output directory.
-
-## Verify the available results
-
-From the repository root:
+## Quick reproducibility checks
 
 ```bash
 python scripts/run_mrbi_smoke_test.py
 python scripts/check_continuation.py
-python scripts/check_main_raw.py
-python scripts/check_recovered_summary.py
-python scripts/check_consistency.py
-python scripts/check_supporting_raw.py
-python scripts/reproduce_tables.py
-python scripts/check_generated_tables.py
-python scripts/make_rho_sensitivity_figure.py
-python scripts/make_qubit_width_heatmap.py
+python scripts/check_final_results.py
+python scripts/run_locked_selected_profile_confirmation.py --dry-run --seed 40
 ```
 
-These are also run in GitHub Actions. The checks do not retrain the QNN.
+These checks do not retrain the QNN.
 
-The two historical main raw files have all five seeds for six tasks and only seed 0 for `wine_0_vs_2`. The recovered `article_qnn_final_summary1.csv` contains five-seed means for `breast_cancer`, `wine_binary`, `wine_0_vs_2`, `wine_1_vs_2` and `digits_1_vs_7`. It agrees exactly with 194 fully observed dataset-method means in the raw files. Together, these data verify all nine reported task-level QNN means. Full historical per-seed CSVs for three tasks are still unavailable.
+## Reproduce the development selection
 
-The historical main table selects the best MRBI method by its five-seed **dataset-level mean**. The separate Spambase external check selects the best of two MRBI profiles within each seed, so its best-profile column is a descriptive upper envelope.
-
-## Reproduce the corrected multiscale method
-
-The current `experiments/mrbi.py` now optimizes `L_sigma` consecutively at the configured decreasing scales. Each stage starts at the preceding stage's candidate and uses `maxiter_per_scale`. An optional final pass at the smallest scale uses `refinement_iters`. The actual stage order and iteration budgets are tested by `scripts/check_continuation.py`.
-
-The full corrected-continuation campaign is complete. The historical results above remain available only as audit material and must not be presented as corrected-continuation results.
-
-Start with a single resumable job:
-
-```bash
-python scripts/run_continuation_campaign.py --max-new-jobs 1
-```
-
-Then resume the full predefined nine-task, five-seed campaign:
+This is computationally expensive.
 
 ```bash
 python scripts/run_continuation_campaign.py
 python scripts/summarize_continuation.py --require-complete
 ```
 
-Each of the 45 jobs has separate raw, summary, configuration and log files under `outputs/continuation_v1/jobs/`. The driver verifies a completed file before skipping it and refuses to mix results from a different implementation, Git commit or package environment. The full run is computationally expensive and is not part of CI.
+The campaign writes outputs under `outputs/continuation_v1/`. The frozen lock records the SHA-256 hashes of the development raw table and selected-profile table used for the manuscript confirmation.
 
-The completed Ryzen campaign was run in three shards under `outputs/full_ryzen/`. Their raw CSVs were verified and merged into `outputs/continuation_v1/main_raw.csv` with 4,365 rows. The three shard `environment.json` and `environment.freeze.txt` files retain the exact provenance. The nominal Wilcoxon result for a best-profile upper envelope is not corrected for profile selection.
+## Reproduce the frozen confirmation
 
-## Method background
+```bash
+for seed in {40..49}; do
+    python -u scripts/run_locked_selected_profile_confirmation.py --run --seed "$seed"
+done
 
-The Gaussian–wavelet zero-localization principle is developed in Vlahek, D., *A hybrid gaussian–wavelet multiscale algorithm for zero localization in oscillatory functions*, Numerical Algorithms (2026), https://doi.org/10.1007/s11075-026-02484-8. This study adapts its numerical motivation to vector-valued implicit equilibrium features before a simulated QNN readout.
+python scripts/summarize_locked_selected_profile_confirmation.py
+```
+
+Generated outputs are written under `outputs/locked_selected_profile_confirmation_v1/` and are ignored by Git.
+
+## Provenance
+
+The frozen selected-profile map was verified against the complete corrected-continuation development campaign before confirmation was run. The committed final aggregate result records:
+
+- development raw SHA-256: `e1a3917be493485156e87e79c921d2a91a54cf715aa55443516059fc3d370cd6`
+- development selected-profile SHA-256: `4cb9ad804076dea25820b73c1640a81e85c7d3b4ad77d16341555269da707908`
+- development seeds: 0–4
+- confirmation seeds: 40–49
+
+The full research path before final cleanup remains available on the archive branch above.

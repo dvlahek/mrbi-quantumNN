@@ -1,22 +1,12 @@
-# Numerical results and provenance
+# Final manuscript results
 
-**Current manuscript results** are the completed full corrected-continuation
-benchmark (9 tasks × 5 seeds × 97 methods) and its paired full-reference
-final-sigma ablation (45 control QNN rows). They were generated on the Ryzen
-workstation in `outputs/continuation_v1/`,
-`outputs/full_ryzen/shard1|shard2|shard3/` and
-`outputs/final_sigma_ablation_full_ryzen_v1/` in their respective checkouts.
+This directory contains only the aggregate evidence used by the final manuscript protocol.
 
-The existing CSVs under this GitHub directory are **historical audit data**.
-They are not the corrected full campaign and are not current evidence for
-the manuscript. In particular, old best-profile tables and sensitivity
-plots should not be reproduced as the corrected full method's output.
+- `final/confirmation_summary.json` — dataset-level and overall confirmation statistics.
+- `final/confirmation_dataset_summary.csv` — one row per dataset, averaged over frozen confirmation seeds 40–49.
 
-`raw/article_qnn_final_raw.csv` and `raw/article_qnn_final_raw2.csv` are the available historical per-seed main-benchmark results. They provide all five seeds for six tasks and one seed for `wine_0_vs_2`.
+The dataset-specific MRBI methods are frozen in:
 
-`summary_tables/article_qnn_final_summary1.csv` is the recovered five-dataset summary. It contains 97 methods per dataset, each with five runs, including `wine_0_vs_2`, `wine_1_vs_2` and `digits_1_vs_7`. Together with the six complete raw datasets, it supports a numerical check of all nine historical task-level QNN means. The missing per-seed CSVs remain unavailable for three tasks.
+`experiments/selected_profile_confirmation_lock_v1.json`
 
-`supporting_raw/` contains Spambase and multistart diagnostic raw files. Other `summary_tables/` files contain the manuscript summaries and inputs for the diagnostic figures.
-
-The corrected-continuation campaign writes its new, version-tagged outputs to `outputs/continuation_v1/`. The corrected full campaign has now completed and been checked. Its complete raw CSV and paired ablation provenance still need to be deposited into this GitHub repository; do not overwrite legacy audit files with non-matching data.
-
+The full per-seed generated outputs are reproducible with `scripts/run_locked_selected_profile_confirmation.py` and are intentionally not tracked on `main`. Earlier historical and diagnostic result files are preserved on `archive/pre-npl-final-cleanup-20261001`.
