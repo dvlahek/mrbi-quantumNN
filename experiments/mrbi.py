@@ -707,7 +707,7 @@ def hybrid_mrbi_solve(
 
     use_mrbi = False
 
-    # Optional escape hatch when the zero solve is clearly unreliable.
+    # Optional fallback when the zero solve is unreliable.
     if (
         hybrid_cfg.accept_any_finite_success_if_zero_failed
         and not zero_result.solver_success_flag
