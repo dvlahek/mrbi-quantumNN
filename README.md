@@ -1,6 +1,6 @@
-# MRBI-stabilized implicit equilibrium features for simulated QNN readouts
+# MRBI-QNN reproducibility code
 
-Code and aggregate results for the Neural Processing Letters manuscript.
+Code and aggregate results for MRBI-stabilized implicit equilibrium features with simulated QNN readouts.
 
 ## Scope
 
