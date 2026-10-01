@@ -24,7 +24,7 @@
   "n_datasets": 9,
   "n_dataset_seed_pairs": 90,
   "source_confirmation_commit": "6d047ba8341962b97b4a69e77b026380ed468b0d",
-  "primary_statistical_unit": "dataset mean across ten frozen confirmation seeds",
+  "primary_statistical_unit": "dataset mean across ten confirmation seeds",
   "primary_comparison": "selected MRBI-QNN minus Zero-QNN",
   "overall": {
     "pca_ba_mean": 0.9721935626102292,
