@@ -1,8 +1,8 @@
-"""Summarize the complete locked selected-profile confirmation on seeds 40-49.
+"""Summarize the selected-profile confirmation on seeds 40-49.
 
-Primary statistical unit: dataset. Each of the nine datasets contributes the
-mean paired balanced-accuracy difference across ten frozen confirmation seeds.
-The primary predeclared comparison is selected MRBI-QNN minus Zero-QNN.
+The statistical unit is the dataset. Each of the nine datasets contributes its
+mean paired balanced-accuracy difference across ten confirmation seeds. The
+primary comparison is selected MRBI-QNN minus Zero-QNN.
 """
 from __future__ import annotations
 
@@ -288,12 +288,12 @@ def main():
         "primary_comparison":"selected MRBI-QNN minus Zero-QNN",
         "dataset_level":dataset_rows,
         "overall":overall,
-        "interpretation_guardrails":[
-            "The dataset-specific method map was fixed from corrected-continuation seeds 0-4 before confirmation seeds 40-49 were run.",
-            "No method, dataset, seed, threshold, or profile is reselected using confirmation results.",
-            "The primary inference uses nine dataset-level paired differences, each averaged over ten confirmation seeds.",
-            "Random-5 multistart and PCA-QNN are secondary references; the primary confirmatory comparison is selected MRBI-QNN versus Zero-QNN.",
-            "The experiment is a new-split confirmation on the same nine benchmark tasks, not external-dataset validation.",
+        "interpretation_notes":[
+            "The dataset-specific methods were selected on development seeds 0-4 before confirmation seeds 40-49 were run.",
+            "Confirmation results do not change the selected method, dataset set, seed set, or thresholds.",
+            "The primary analysis uses nine dataset-level paired differences, each averaged over ten confirmation seeds.",
+            "Random-5 multistart and PCA-QNN are secondary references. The primary comparison is selected MRBI-QNN versus Zero-QNN.",
+            "The confirmation uses new splits of the same nine benchmark tasks; it is not external-dataset validation.",
         ],
     }
 
