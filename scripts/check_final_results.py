@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import json
+from itertools import product
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy.stats import wilcoxon
+from scipy.stats import rankdata
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCK = ROOT / "experiments" / "selected_profile_confirmation_lock_v1.json"
@@ -26,6 +27,24 @@ def close(label: str, actual: float, expected: float, tol: float = 1e-12):
     if not np.isclose(float(actual), float(expected), atol=tol, rtol=0.0):
         raise AssertionError(f"{label}: {actual} != {expected}")
 
+
+
+def exact_signed_rank_greater(values, tol: float = 1e-12):
+    values = np.asarray(values, dtype=float)
+    values = values[np.abs(values) > tol]
+    if len(values) == 0:
+        return 0.0, 1.0
+    ranks = rankdata(np.abs(values), method="average")
+    statistic = float(np.sum(ranks[values > 0]))
+    null_statistics = np.fromiter(
+        (
+            sum(rank for rank, include in zip(ranks, bits) if include)
+            for bits in product((0, 1), repeat=len(ranks))
+        ),
+        dtype=float,
+    )
+    pvalue = float(np.mean(null_statistics >= statistic - 1e-15))
+    return statistic, pvalue
 
 def main():
     lock = json.loads(LOCK.read_text(encoding="utf-8"))
@@ -81,11 +100,15 @@ def main():
             f"Unexpected MRBI-Zero sign count: {(positive, neutral, negative)}"
         )
 
-    wz = wilcoxon(dz, alternative="greater", zero_method="wilcox").pvalue
-    wm = wilcoxon(dm, alternative="greater", zero_method="wilcox").pvalue
-    close("Wilcoxon selected > Zero", wz,
+    wz_stat, wz = exact_signed_rank_greater(dz)
+    wm_stat, wm = exact_signed_rank_greater(dm)
+    close("Signed-rank statistic selected > Zero", wz_stat,
+          summary["overall"]["wilcoxon_selected_gt_zero"]["statistic"])
+    close("Signed-rank selected > Zero", wz,
           summary["overall"]["wilcoxon_selected_gt_zero"]["pvalue"])
-    close("Wilcoxon selected > multistart", wm,
+    close("Signed-rank statistic selected > multistart", wm_stat,
+          summary["overall"]["wilcoxon_selected_gt_multistart5"]["statistic"])
+    close("Signed-rank selected > multistart", wm,
           summary["overall"]["wilcoxon_selected_gt_multistart5"]["pvalue"])
 
     if summary["primary_comparison"] != "selected MRBI-QNN minus Zero-QNN":
