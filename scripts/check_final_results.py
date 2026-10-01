@@ -1,4 +1,4 @@
-"""Verify the frozen profile map and committed final aggregate results."""
+"""Check the fixed profile map and final aggregate results."""
 from __future__ import annotations
 
 import json
@@ -59,7 +59,7 @@ def main():
     if evidence["selected_profiles_sha256"] != EXPECTED_SELECTED_SHA:
         raise AssertionError("Selected-profile SHA drift")
     if tuple(evidence["datasets"]) != EXPECTED_DATASETS:
-        raise AssertionError("Locked dataset set/order drift")
+        raise AssertionError("Fixed dataset set/order drift")
     if tuple(lock["confirmation_plan"]["seeds"]) != tuple(range(40, 50)):
         raise AssertionError("Confirmation seed drift")
 
@@ -71,7 +71,7 @@ def main():
     }
     got_methods = dict(zip(data["dataset"], data["selected_method"]))
     if got_methods != locked_methods:
-        raise AssertionError("Final dataset methods differ from the frozen lock")
+        raise AssertionError("Final dataset methods differ from the fixed profile map")
 
     dz = data["delta_selected_zero"].to_numpy(float)
     dm = data["delta_selected_multistart5"].to_numpy(float)
@@ -114,7 +114,7 @@ def main():
     if summary["primary_comparison"] != "selected MRBI-QNN minus Zero-QNN":
         raise AssertionError("Primary comparison drift")
     if summary["n_dataset_seed_pairs"] != 90:
-        raise AssertionError("Expected 90 frozen confirmation dataset-seed pairs")
+        raise AssertionError("Expected 90 confirmation dataset-seed pairs")
 
     print(
         "FINAL_RESULTS_CHECK_OK "
