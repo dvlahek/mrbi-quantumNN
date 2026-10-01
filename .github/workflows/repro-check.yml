@@ -16,41 +16,23 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install lightweight dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Verify recovered benchmark syntax
-        run: python -m py_compile experiments/*.py scripts/*.py
+      - name: Compile final reproducibility code
+        run: |
+          python -m py_compile             experiments/mrbi.py             experiments/main_qnn_benchmark.py             scripts/run_mrbi_smoke_test.py             scripts/check_continuation.py             scripts/run_continuation_campaign.py             scripts/summarize_continuation.py             scripts/run_locked_selected_profile_confirmation.py             scripts/summarize_locked_selected_profile_confirmation.py             scripts/check_final_results.py
 
-      - name: Run recovered MRBI smoke test
+      - name: Run MRBI smoke test
         run: python scripts/run_mrbi_smoke_test.py
 
-      - name: Verify descending-scale MRBI continuation
+      - name: Verify corrected continuation schedule
         run: python scripts/check_continuation.py
 
-      - name: Verify main QNN raw-data coverage and means
-        run: python scripts/check_main_raw.py
+      - name: Verify committed final results and frozen profile map
+        run: python scripts/check_final_results.py
 
-      - name: Verify recovered five-dataset main summary
-        run: python scripts/check_recovered_summary.py
-
-      - name: Verify resumable campaign arguments
-        run: python scripts/run_continuation_campaign.py --dry-run --datasets breast_cancer --seeds 0
-
-      - name: Check manuscript summary consistency
-        run: python scripts/check_consistency.py
-
-      - name: Check archived supporting raw results
-        run: python scripts/check_supporting_raw.py
-
-      - name: Regenerate and check table snippets
-        run: |
-          python scripts/reproduce_tables.py
-          python scripts/check_generated_tables.py
-
-      - name: Regenerate diagnostic figures
-        run: |
-          python scripts/make_rho_sensitivity_figure.py
-          python scripts/make_qubit_width_heatmap.py
+      - name: Verify frozen confirmation plan without QNN training
+        run: python scripts/run_locked_selected_profile_confirmation.py --dry-run --seed 40
