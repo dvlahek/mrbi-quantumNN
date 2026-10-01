@@ -84,3 +84,10 @@ No formal p-value is used for this secondary analysis. PCA is reported only as a
 ## Analyses not repeated
 
 The PCA4 dimension control, qubit-width sensitivity, and Spambase benchmark are not repeated. They do not address the current primary comparison as directly as the two checks above, and the old versions used result-dependent profile selection that is not part of the current fixed-profile protocol.
+
+
+## Implementation amendment 2026-10-01
+
+The first rho=1.20 run exposed a serialization-only edge case. For a hybrid profile that never invoked the detector, the diagnostic `hybrid_mean_sigma_min_det` was undefined and represented internally as `NaN`. Strict JSON output (`allow_nan=False`) therefore stopped the runner after computation. The numerical result itself was not invalid.
+
+The runner now converts non-finite auxiliary diagnostics to JSON `null` before persistence. No solver rule, MRBI objective, trigger, profile, random seed, operator, QNN setting, dataset, spectral-radius value, or statistical analysis was changed. The incomplete rho=1.20 / seed 40 output must be discarded and rerun from the start under the patched runner. This amendment was made before inspecting any completed rho=1.20 sensitivity job.
