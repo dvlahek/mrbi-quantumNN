@@ -1031,7 +1031,7 @@ def run_job(dataset: str, cfg: ExperimentConfig, mrbi_profiles: List[MRBIProfile
         cfg_mp = apply_mrbi_profile(cfg, mp)
         print(f"[{dataset} seed={cfg.seed}] Forced MRBI profile: {mp.name}", flush=True)
 
-        # Forced MRBI for candidate usefulness.
+        # Forced MRBI candidate ablation.
         t0 = time.perf_counter()
         Ztr_forced, st_tr_forced = solve_forced_mrbi_features(Xtr_p, layer, cfg_mp, cfg.seed + 2000)
         Zte_forced, st_te_forced = solve_forced_mrbi_features(Xte_p, layer, cfg_mp, cfg.seed + 3000)
