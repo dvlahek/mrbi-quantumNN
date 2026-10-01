@@ -1,12 +1,11 @@
 """
 mrbi.py
 
-Reusable implementation of Multiscale Residual-Based Initialization (MRBI)
-with a hybrid fallback wrapper for nonlinear equilibrium solving.
+Implementation of Multiscale Residual-Based Initialization (MRBI) and the
+hybrid wrapper used for nonlinear equilibrium solving.
 
-This module is intentionally focused on the method itself so it can be imported
-from test scripts. It does not include dataset loading, readout training, or
-benchmark orchestration.
+The module contains the numerical method only. Dataset loading, readout
+training, and benchmark orchestration are handled elsewhere.
 """
 
 from __future__ import annotations
@@ -57,11 +56,11 @@ def _default_rng(rng: Optional[np.random.Generator]) -> np.random.Generator:
 @dataclass
 class ImplicitTanhLayer:
     """
-    Convenience wrapper for the equilibrium model
+    Wrapper for the equilibrium model
 
         z* = tanh(W z* + U x + b)
 
-    so that users can quickly generate F(z, x) and J(z, x).
+    with residual and Jacobian construction.
     """
     W: Array
     U: Array
@@ -230,7 +229,7 @@ def solve_root(
 ) -> RootResult:
     """
     Solve F(z; x) = 0 from initialization z0 using scipy.optimize.root.
-    Robust to solver exceptions: returns a failed RootResult instead of raising.
+    Solver exceptions are converted to a failed RootResult.
     """
     cfg = cfg or RootSolveConfig()
     z0 = _as_float_array(z0)
@@ -310,7 +309,7 @@ def jacobian_health(J: JacobianFn, x: Array, z: Array) -> tuple[float, bool]:
     """
     Returns:
         sigma_min : smallest singular value if available, else 0.0
-        ok        : whether the Jacobian was valid and finite
+        ok        : True when the Jacobian is square and finite
     """
     try:
         Jz = np.asarray(J(z, x), dtype=np.float64)
