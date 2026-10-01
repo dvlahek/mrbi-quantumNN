@@ -1,22 +1,19 @@
-"""Prospective confirmation of development-selected corrected-continuation MRBI profiles.
+"""Confirm MRBI profiles selected on development seeds 0-4.
 
-The dataset -> MRBI method map is frozen in:
+The dataset-specific method map is fixed in:
     experiments/selected_profile_confirmation_lock_v1.json
 
-Development evidence: corrected-continuation seeds 0-4.
-Confirmation evidence: frozen new seeds 40-49.
-
-For each dataset/seed this script evaluates:
+Confirmation uses new seeds 40-49. For each dataset and seed the script
+evaluates:
   1) PCA-QNN reference;
   2) Zero-QNN implicit baseline;
-  3) the single preselected MRBI-QNN method for that dataset;
+  3) the preselected MRBI-QNN method;
   4) random-5 multistart QNN control.
 
-The selected MRBI representation is generated with exactly the same layer
-construction, MRBI profile, hybrid/forced semantics, solver RNG offsets,
-60-epoch QNN protocol and QNN seed convention used in the corrected-
-continuation development campaign. The implicit QNN methods use the same QNN
-seed, hence identical initial readout parameters and minibatch order.
+The MRBI run uses the same layer construction, profile definitions, solver RNG
+offsets, 60-epoch QNN protocol, and QNN seed convention as the development
+campaign. All implicit methods use the same QNN seed, so their initial readout
+parameters and minibatch order are identical.
 """
 from __future__ import annotations
 
@@ -205,7 +202,7 @@ def solve_multistart(X,layer,cfg,rng_seed:int,n_starts=5,radius=1.0):
 
 
 def qnn_metrics(Xtr,ytr,Xte,yte,cfg):
-    # Exactly the development campaign convention used by evaluate_readouts().
+    # Use the same QNN convention as the development campaign.
     return bench.train_qnn(
         Xtr,ytr,Xte,yte,cfg,cfg.seed+777,
     )
@@ -341,13 +338,13 @@ def summarize_seed(rows):
 def dry_run(seed:int,lock):
     plan=lock["confirmation_plan"]
     if seed not in plan["seeds"]:
-        raise SystemExit("Seed outside frozen confirmation set")
+        raise SystemExit("Seed outside the fixed confirmation set")
     print(
         "LOCKED_SELECTED_PROFILE_CONFIRMATION_DRY_RUN_OK "
         f"seed={seed} datasets=9 rho={plan['spectral_radius']} "
         f"qnn_epochs={plan['qnn_epochs']} development_raw_sha="
         f"{lock['development_evidence']['main_raw_sha256'][:12]} "
-        "profiles=frozen random5=frozen no_confirmation_data_loaded",
+        "profiles=fixed random5=fixed no_confirmation_data_loaded",
         flush=True,
     )
     for row in lock["selected_profiles"]:
@@ -368,7 +365,7 @@ def main():
 
     lock=load_lock()
     if args.seed not in lock["confirmation_plan"]["seeds"]:
-        raise SystemExit("Seed is not in frozen confirmation set 40-49")
+        raise SystemExit("Seed is not in the fixed confirmation set 40-49")
     if args.dry_run:
         dry_run(args.seed,lock)
         return
