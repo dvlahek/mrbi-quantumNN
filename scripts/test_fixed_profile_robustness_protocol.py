@@ -20,6 +20,7 @@ from fixed_profile_robustness_common import (
     prepare_dataset,
     spectral_radius,
 )
+from run_fixed_profile_rho_sensitivity import json_safe
 
 
 def main():
@@ -68,10 +69,28 @@ def main():
         if not np.isclose(base_rho,ANCHOR_RHO,atol=1e-10,rtol=0.0):
             raise AssertionError("Unexpected base spectral radius")
 
+    cleaned=json_safe({
+        "finite":1.25,
+        "nan":float("nan"),
+        "pos_inf":float("inf"),
+        "neg_inf":float("-inf"),
+        "nested":[np.float64("nan"),2.0],
+    })
+    expected={
+        "finite":1.25,
+        "nan":None,
+        "pos_inf":None,
+        "neg_inf":None,
+        "nested":[None,2.0],
+    }
+    if cleaned!=expected:
+        raise AssertionError(f"JSON-safe conversion drift: {cleaned}")
+
     print(
         "FIXED_PROFILE_ROBUSTNESS_PROTOCOL_TEST_OK "
         f"dataset={dataset} seed={seed} base_seed={base_seed} "
-        f"rhos={','.join(f'{r:.2f}' for r in RHO_VALUES)}"
+        f"rhos={','.join(f'{r:.2f}' for r in RHO_VALUES)} "
+        "json_nonfinite_to_null=true"
     )
 
 
