@@ -50,7 +50,7 @@ def _default_rng(rng: Optional[np.random.Generator]) -> np.random.Generator:
 
 
 # ---------------------------------------------------------------------
-# Optional convenience layer for the specific implicit model in the paper
+# Tanh implicit layer used in the benchmark
 # ---------------------------------------------------------------------
 
 @dataclass
