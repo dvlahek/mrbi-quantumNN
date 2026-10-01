@@ -41,9 +41,11 @@
     "delta_selected_zero_neutral_datasets": 1,
     "delta_selected_zero_negative_datasets": 2,
     "wilcoxon_selected_gt_zero": {
-      "statistic": 34,
+      "statistic": 27.5,
       "pvalue": 0.1015625,
-      "alternative": "greater"
+      "alternative": "greater",
+      "zero_tolerance": 1e-12,
+      "method": "exact signed-rank sign permutation"
     },
     "delta_selected_multistart5_mean": 0.0161089065255732,
     "delta_selected_multistart5_median": 0.010416666666666696,
@@ -52,9 +54,11 @@
       0.029490740740740744
     ],
     "wilcoxon_selected_gt_multistart5": {
-      "statistic": 33,
-      "pvalue": 0.01953125,
-      "alternative": "greater"
+      "statistic": 26,
+      "pvalue": 0.0234375,
+      "alternative": "greater",
+      "zero_tolerance": 1e-12,
+      "method": "exact signed-rank sign permutation"
     },
     "delta_selected_pca_mean": -0.04234347442680776,
     "delta_multistart5_zero_mean": -0.007760141093474433,
