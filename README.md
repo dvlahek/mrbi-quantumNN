@@ -106,4 +106,4 @@ The frozen selected-profile map was verified against the complete corrected-cont
 - development seeds: 0–4
 - confirmation seeds: 40–49
 
-The full research path before final cleanup remains available on the archive branch above.
+The full tracked research/code path before final cleanup remains available on the archive branch above. Local generated `outputs/` directories were not tracked by Git and are therefore not part of that archive branch.
