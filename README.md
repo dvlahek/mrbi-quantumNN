@@ -6,7 +6,7 @@ Code and aggregate results for MRBI-stabilized implicit equilibrium features wit
 
 The main branch contains the code, fixed configuration, and aggregate results used for the final MRBI-QNN development and confirmation experiments. Earlier diagnostics (caps, gates, rescue-only variants, trainable-angle prototypes, homotopy experiments, external-fusion studies, and other follow-up branches) are kept on the archive branch:
 
-`archive/pre-npl-final-cleanup-20261001`
+`archive/research-history-20261001`
 
 All QNN results are obtained by classical simulation. The study makes no claim about quantum hardware performance or quantum advantage.
 
