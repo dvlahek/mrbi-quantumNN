@@ -8,10 +8,11 @@ from __future__ import annotations
 
 import csv
 import json
+from itertools import product
 from pathlib import Path
 
 import numpy as np
-from scipy.stats import wilcoxon
+from scipy.stats import rankdata
 
 ROOT=Path(__file__).resolve().parents[1]
 PLAN="locked_selected_profile_confirmation_v1"
@@ -31,26 +32,40 @@ def bootstrap_ci(values,seed,n_boot=20000):
     ]
 
 
-def safe_wilcoxon(values,alternative="greater"):
+def exact_signed_rank_greater(values,tol=1e-12):
+    """Exact one-sided signed-rank sign-permutation test.
+
+    Values with |delta| <= tol are treated as numerical zero.  This makes the
+    final statistic independent of SciPy's version-specific handling of tiny
+    floating-point near-zeros in wilcoxon().
+    """
     values=np.asarray(values,dtype=float)
-    if np.all(np.abs(values)<=1e-15):
+    values=values[np.abs(values)>tol]
+    if len(values)==0:
         return {
             "statistic":0.0,
             "pvalue":1.0,
-            "alternative":alternative,
+            "alternative":"greater",
+            "zero_tolerance":tol,
+            "method":"exact signed-rank sign permutation",
         }
-    test=wilcoxon(
-        values,
-        alternative=alternative,
-        zero_method="wilcox",
-        method="auto",
+    ranks=rankdata(np.abs(values),method="average")
+    statistic=float(np.sum(ranks[values>0]))
+    null_statistics=np.fromiter(
+        (
+            sum(rank for rank,include in zip(ranks,bits) if include)
+            for bits in product((0,1),repeat=len(ranks))
+        ),
+        dtype=float,
     )
+    pvalue=float(np.mean(null_statistics>=statistic-1e-15))
     return {
-        "statistic":float(test.statistic),
-        "pvalue":float(test.pvalue),
-        "alternative":alternative,
+        "statistic":statistic,
+        "pvalue":pvalue,
+        "alternative":"greater",
+        "zero_tolerance":tol,
+        "method":"exact signed-rank sign permutation",
     }
-
 
 def selected_success_rate(result):
     stats=result["solver"]["selected_test"]
@@ -219,13 +234,13 @@ def main():
             np.sum(np.abs(dz)<=1e-12)
         ),
         "delta_selected_zero_negative_datasets":int(np.sum(dz< -1e-12)),
-        "wilcoxon_selected_gt_zero":safe_wilcoxon(dz,"greater"),
+        "wilcoxon_selected_gt_zero":exact_signed_rank_greater(dz),
         "delta_selected_multistart5_mean":float(dm.mean()),
         "delta_selected_multistart5_median":float(np.median(dm)),
         "delta_selected_multistart5_bootstrap95_dataset_ci":bootstrap_ci(
             dm,seed=20261041,
         ),
-        "wilcoxon_selected_gt_multistart5":safe_wilcoxon(dm,"greater"),
+        "wilcoxon_selected_gt_multistart5":exact_signed_rank_greater(dm),
         "delta_selected_pca_mean":float(dp.mean()),
         "delta_multistart5_zero_mean":float(dmsz.mean()),
         "selected_solver_success_gain_vs_zero_mean":float(
