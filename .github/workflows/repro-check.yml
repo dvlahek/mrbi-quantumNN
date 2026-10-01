@@ -31,7 +31,7 @@ jobs:
       - name: Verify corrected continuation schedule
         run: python scripts/check_continuation.py
 
-      - name: Verify committed final results and frozen profile map
+      - name: Verify final results and fixed profile map
         run: python scripts/check_final_results.py
 
       - name: Verify fixed confirmation plan without QNN training
