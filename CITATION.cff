@@ -1,6 +1,6 @@
 cff-version: 1.2.0
-title: "MRBI-Stabilized Implicit Equilibrium Features for Simulated Quantum Neural Network Readouts"
-message: "If you use this code, please cite the associated manuscript and the related Numerical Algorithms article when using the multiscale residual-detector idea."
+title: "MRBI-QNN Reproducibility Code"
+message: "If you use the multiscale residual-detector implementation, please cite the related Numerical Algorithms article."
 type: software
 authors:
   - family-names: Vlahek
