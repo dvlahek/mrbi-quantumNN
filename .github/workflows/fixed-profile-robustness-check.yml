@@ -1,0 +1,42 @@
+name: Fixed-profile robustness protocol check
+
+on:
+  push:
+    branches:
+      - experiment/fixed-profile-robustness-20261001
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  protocol:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install lightweight dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Compile robustness scripts
+        run: |
+          python -m py_compile \
+            scripts/fixed_profile_robustness_common.py \
+            scripts/run_fixed_profile_rho_sensitivity.py \
+            scripts/summarize_fixed_profile_rho_sensitivity.py \
+            scripts/run_fixed_profile_classical_readouts.py \
+            scripts/summarize_fixed_profile_classical_readouts.py \
+            scripts/test_fixed_profile_robustness_protocol.py
+
+      - name: Check rho decoupling and confirmation anchor
+        run: python scripts/test_fixed_profile_robustness_protocol.py
+
+      - name: Dry-run rho sensitivity
+        run: |
+          python scripts/run_fixed_profile_rho_sensitivity.py \
+            --dry-run --seed 40 --rho 2.0
