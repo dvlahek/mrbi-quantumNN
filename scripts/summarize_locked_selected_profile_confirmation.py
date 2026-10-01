@@ -284,7 +284,7 @@ def main():
         "n_datasets":len(datasets),
         "n_dataset_seed_pairs":len(records),
         "commits_present":sorted(commits),
-        "primary_statistical_unit":"dataset mean across ten frozen confirmation seeds",
+        "primary_statistical_unit":"dataset mean across ten confirmation seeds",
         "primary_comparison":"selected MRBI-QNN minus Zero-QNN",
         "dataset_level":dataset_rows,
         "overall":overall,
