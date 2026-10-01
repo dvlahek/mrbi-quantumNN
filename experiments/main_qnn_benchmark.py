@@ -1193,7 +1193,7 @@ def print_leaderboard(summary: pd.DataFrame, top_k=10):
 # ---------------------------------------------------------------------
 
 def parse_args():
-    p = argparse.ArgumentParser(description="MRBI-QNN benchmark for the manuscript.")
+    p = argparse.ArgumentParser(description="MRBI-QNN benchmark.")
     p.add_argument("--mode", choices=["hard_quick", "hard_article"], default="hard_quick")
     p.add_argument("--datasets", nargs="+", default=[
         "breast_cancer", "wine_binary", "wine_0_vs_2", "wine_1_vs_2",
