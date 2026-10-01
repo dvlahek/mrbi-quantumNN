@@ -135,5 +135,5 @@
     ],
     "no_result_dependent_reselection": true
   },
-  "provenance_note": "Frozen from the complete corrected-continuation development campaign before running any confirmation seed 40-49. The profile map is verified against both main_raw.csv and selected_profiles.csv."
+  "provenance_note": "Selected from the complete corrected-continuation development campaign and fixed before confirmation seeds 40-49 were run. The profile map matches both main_raw.csv and selected_profiles.csv."
 }
