@@ -34,5 +34,5 @@ jobs:
       - name: Verify committed final results and frozen profile map
         run: python scripts/check_final_results.py
 
-      - name: Verify frozen confirmation plan without QNN training
+      - name: Verify fixed confirmation plan without QNN training
         run: python scripts/run_locked_selected_profile_confirmation.py --dry-run --seed 40
