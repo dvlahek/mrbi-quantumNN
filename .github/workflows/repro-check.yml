@@ -21,18 +21,41 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Compile final reproducibility code
+      - name: Compile reproducibility code
         run: |
-          python -m py_compile             experiments/mrbi.py             experiments/main_qnn_benchmark.py             scripts/run_mrbi_smoke_test.py             scripts/check_continuation.py             scripts/run_continuation_campaign.py             scripts/summarize_continuation.py             scripts/run_locked_selected_profile_confirmation.py             scripts/summarize_locked_selected_profile_confirmation.py             scripts/check_final_results.py
+          python -m py_compile \
+            experiments/mrbi.py \
+            experiments/main_qnn_benchmark.py \
+            scripts/run_mrbi_smoke_test.py \
+            scripts/check_continuation.py \
+            scripts/check_final_results.py \
+            scripts/run_locked_selected_profile_confirmation.py \
+            scripts/summarize_locked_selected_profile_confirmation.py \
+            scripts/fixed_profile_robustness_common.py \
+            scripts/run_fixed_profile_rho_sensitivity.py \
+            scripts/summarize_fixed_profile_rho_sensitivity.py \
+            scripts/run_fixed_profile_classical_readouts.py \
+            scripts/summarize_fixed_profile_classical_readouts.py \
+            scripts/test_fixed_profile_robustness_protocol.py \
+            scripts/figures/make_fixed_profile_robustness_figures.py
 
       - name: Run MRBI smoke test
         run: python scripts/run_mrbi_smoke_test.py
 
-      - name: Verify corrected continuation schedule
+      - name: Verify continuation schedule
         run: python scripts/check_continuation.py
 
-      - name: Verify final results and fixed profile map
+      - name: Verify tracked final results
         run: python scripts/check_final_results.py
 
-      - name: Verify fixed confirmation plan without QNN training
+      - name: Verify fixed robustness protocol
+        run: python scripts/test_fixed_profile_robustness_protocol.py
+
+      - name: Verify confirmation plan without QNN training
         run: python scripts/run_locked_selected_profile_confirmation.py --dry-run --seed 40
+
+      - name: Verify spectral-radius plan without QNN training
+        run: python scripts/run_fixed_profile_rho_sensitivity.py --dry-run --seed 40 --rho 2.0
+
+      - name: Recreate robustness figures from tracked summaries
+        run: python scripts/figures/make_fixed_profile_robustness_figures.py
