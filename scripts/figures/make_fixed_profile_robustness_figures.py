@@ -214,12 +214,6 @@ def make_rho_main_figure(rho_dataset,rho_overall,confirmation,out_dir):
     ax.errorbar(x,ba,yerr=ba_err,marker="o",capsize=4,linewidth=1.5)
     ax.axhline(0.0,linewidth=1)
     ax.axvline(2.0,linestyle="--",linewidth=1)
-    ax.text(
-        2.0,0.98,"confirmation setting",
-        rotation=90,va="top",ha="right",
-        transform=ax.get_xaxis_transform(),
-        fontsize=8,
-    )
     ax.set_xticks(x)
     ax.set_xlabel(r"Spectral radius $\rho(W)$")
     ax.set_ylabel("MRBI - Zero balanced accuracy (pp)")
@@ -236,12 +230,6 @@ def make_rho_main_figure(rho_dataset,rho_overall,confirmation,out_dir):
     )
     ax.axhline(0.0,linewidth=1)
     ax.axvline(2.0,linestyle="--",linewidth=1)
-    ax.text(
-        2.0,0.98,"confirmation setting",
-        rotation=90,va="top",ha="right",
-        transform=ax.get_xaxis_transform(),
-        fontsize=8,
-    )
     ax.set_xticks(x)
     ax.set_xlabel(r"Spectral radius $\rho(W)$")
     ax.set_ylabel("MRBI - Zero solve success (pp)")
