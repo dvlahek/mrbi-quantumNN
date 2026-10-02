@@ -169,12 +169,20 @@ def load_inputs(rho_base,classical_base,confirmation_path):
     )
 
 
-def make_rho_main_figure(rho_dataset,rho_overall,out_dir):
+def make_rho_main_figure(rho_dataset,rho_overall,confirmation,out_dir):
     x=rho_overall["rho"].to_numpy(dtype=float)
 
     ba=rho_overall["delta_mean"].to_numpy(dtype=float)*100.0
     ba_lo=rho_overall["delta_bootstrap95_low"].to_numpy(dtype=float)*100.0
     ba_hi=rho_overall["delta_bootstrap95_high"].to_numpy(dtype=float)*100.0
+
+    # Use the canonical confirmation interval at rho=2.0 so the same anchor
+    # is reported consistently in the main confirmation table and this figure.
+    anchor_idx=int(np.where(np.isclose(x,2.0))[0][0])
+    anchor_ci=confirmation["overall"]["delta_selected_zero_bootstrap95_dataset_ci"]
+    ba_lo[anchor_idx]=float(anchor_ci[0])*100.0
+    ba_hi[anchor_idx]=float(anchor_ci[1])*100.0
+
     ba_err=np.vstack((ba-ba_lo,ba_hi-ba))
 
     solver_mean=[]
@@ -206,6 +214,12 @@ def make_rho_main_figure(rho_dataset,rho_overall,out_dir):
     ax.errorbar(x,ba,yerr=ba_err,marker="o",capsize=4,linewidth=1.5)
     ax.axhline(0.0,linewidth=1)
     ax.axvline(2.0,linestyle="--",linewidth=1)
+    ax.text(
+        2.0,0.98,"confirmation setting",
+        rotation=90,va="top",ha="right",
+        transform=ax.get_xaxis_transform(),
+        fontsize=8,
+    )
     ax.set_xticks(x)
     ax.set_xlabel(r"Spectral radius $\rho(W)$")
     ax.set_ylabel("MRBI - Zero balanced accuracy (pp)")
@@ -222,6 +236,12 @@ def make_rho_main_figure(rho_dataset,rho_overall,out_dir):
     )
     ax.axhline(0.0,linewidth=1)
     ax.axvline(2.0,linestyle="--",linewidth=1)
+    ax.text(
+        2.0,0.98,"confirmation setting",
+        rotation=90,va="top",ha="right",
+        transform=ax.get_xaxis_transform(),
+        fontsize=8,
+    )
     ax.set_xticks(x)
     ax.set_xlabel(r"Spectral radius $\rho(W)$")
     ax.set_ylabel("MRBI - Zero solve success (pp)")
@@ -250,7 +270,8 @@ def make_rho_dataset_figure(rho_dataset,out_dir):
             sub["rho"],
             sub["delta_selected_zero"]*100.0,
             marker="o",
-            linewidth=1.2,
+            markersize=4.5,
+            linewidth=1.0,
             label=DATASET_LABELS[dataset],
         )
 
@@ -334,10 +355,6 @@ def make_readout_figure(
     ax.set_yticks(y)
     ax.set_yticklabels(labels)
     ax.set_xlabel("MRBI - Zero balanced accuracy (pp)")
-    ax.set_title(
-        "Fixed-profile readout sensitivity "
-        "(labels show + / 0 / - datasets)"
-    )
     fig.tight_layout()
 
     paths=save_figure(
@@ -386,7 +403,7 @@ def main():
     paths=[]
     paths.extend(
         make_rho_main_figure(
-            rho_dataset,rho_overall,args.out_dir.resolve()
+            rho_dataset,rho_overall,confirmation,args.out_dir.resolve()
         )
     )
     paths.extend(
