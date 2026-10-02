@@ -31,6 +31,7 @@ jobs:
             scripts/summarize_fixed_profile_rho_sensitivity.py \
             scripts/run_fixed_profile_classical_readouts.py \
             scripts/summarize_fixed_profile_classical_readouts.py \
+            scripts/figures/make_fixed_profile_robustness_figures.py \
             scripts/test_fixed_profile_robustness_protocol.py
 
       - name: Check rho decoupling and confirmation anchor
